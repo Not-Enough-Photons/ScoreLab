@@ -1,5 +1,7 @@
 ﻿using MelonLoader;
 
+using UnityEngine;
+
 namespace NEP.Scoreworks
 {
     public static class BuildInfo
@@ -13,6 +15,9 @@ namespace NEP.Scoreworks
 
     public class Main : MelonMod
     {
+        private Core.ScoreworksManager scoreworksManager;
+        private UI.UIManager uiManager;
+
         public override void OnApplicationStart()
         {
             base.OnApplicationStart();
@@ -20,7 +25,7 @@ namespace NEP.Scoreworks
 
         public override void OnSceneWasLoaded(int buildIndex, string sceneName)
         {
-            base.OnSceneWasLoaded(buildIndex, sceneName);
+            scoreworksManager = new GameObject("Scoreworks Manager").AddComponent<Core.ScoreworksManager>();
         }
 
         public override void OnSceneWasUnloaded(int buildIndex, string sceneName)
