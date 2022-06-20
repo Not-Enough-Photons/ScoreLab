@@ -5,25 +5,40 @@ using UnityEngine;
 
 namespace NEP.Scoreworks.Core
 {
-    [MelonLoader.RegisterTypeInIl2Cpp]
-    public class ScoreworksManager : MonoBehaviour
+    public class ScoreworksManager
     {
-        public ScoreworksManager(IntPtr ptr) : base(ptr) { }
+        public ScoreworksManager()
+        {
+            Awake();
+            Start();
+        }
 
         public static ScoreworksManager instance { get; private set; }
 
-        public List<Data.SWValue> swValues = new List<Data.SWValue>();
+        public static List<Data.SWValue> swValues = new List<Data.SWValue>();
 
         public static Action<Data.SWValue> OnScoreAdded;
         public static Action<Data.SWValue> OnScoreRemoved;
+
+        public static Action<Data.SWValue> OnScoreChanged;
+        public static Action<Data.SWValue> OnMultiplierChanged;
 
         public static Action<Data.SWValue> OnMultiplierAdded;
         public static Action<Data.SWValue> OnMultiplierRemoved;
 
         public static Dictionary<string, Data.SWHighScore> highScoreTable = new Dictionary<string, Data.SWHighScore>();
 
-        public int currentScore { get; private set; }
-        public float currentMultiplier { get; private set; }
+        public int currentScore;
+        public float currentMultiplier;
+
+        private string[] test = new string[]
+        {
+            "KILL",
+            "HEADSHOT",
+            "FLAG CAPTURED",
+            "TEAM SCORE",
+            "SLOW-MO KILL"
+        };
 
         private void Awake()
         {
@@ -31,82 +46,63 @@ namespace NEP.Scoreworks.Core
             {
                 instance = this;
             }
-
-            // Singletons are handled differently
-            // in BONEWORKS mods.
-            // We instead just recreate the instance and destroy it manually
-            // through OnSceneWasLoaded/OnSceneWasUnloaded
         }
 
-        private void OnEnable()
+        private void Start()
         {
-            OnScoreAdded += swValues.Add;
-            OnMultiplierAdded += swValues.Add;
+            OnMultiplierRemoved += Test;
         }
 
-        private void OnDisable()
-        {
-            OnScoreAdded -= swValues.Add;
-            OnMultiplierAdded -= swValues.Add;
-        }
-
-        private void Update()
+        public void Update()
         {
             if (Input.GetKeyDown(KeyCode.Space))
             {
-                Data.SWValue val = new Data.SWValue()
-                {
-                    name = "Some Score Name",
-                    score = 100,
-                    maxDuration = 5f,
-                    type = Data.SWValueType.Score
-                };
-
-                SetScore(val);
+                new Data.SWValue(test[UnityEngine.Random.Range(0, test.Length)], 20);
             }
 
             if (Input.GetKeyDown(KeyCode.M))
             {
-                Data.SWValue val = new Data.SWValue()
-                {
-                    name = "Test Mult",
-                    multiplier = 2.5f,
-                    maxDuration = 5f,
-                    type = Data.SWValueType.Multiplier
-                };
-
-                SetMultiplier(val);
+                new Data.SWValue(test[UnityEngine.Random.Range(0, test.Length)], 0.5f, UnityEngine.Random.Range(1f, 5f));
             }
 
-            foreach(Data.SWValue value in swValues)
+            for(int valueIndex = 0; valueIndex < swValues.Count; valueIndex++)
             {
-                value.Update();
+                Data.SWValue current = swValues[valueIndex];
+
+                if(current == null)
+                {
+                    continue;
+                }
+
+                current?.Update();
+            }
+        }
+
+        public void AddValues(Data.SWValue value)
+        {
+            if (value.type == Data.SWValueType.Score)
+            {
+                currentScore += value.score;
+            }
+
+            if (value.type == Data.SWValueType.Multiplier)
+            {
+                currentMultiplier += value.multiplier;
+            }
+        }
+
+        public void Test(Data.SWValue value)
+        {
+            if(value.type == Data.SWValueType.Multiplier)
+            {
+                currentMultiplier -= value.multiplier;
+                OnMultiplierChanged?.Invoke(value);
             }
         }
 
         public Data.SWHighScore RetrieveHighScore(string sceneName)
         {
             return highScoreTable[sceneName];
-        }
-
-        private Dictionary<string, Data.SWHighScore> RetrieveTableFromFile(string pathToDir)
-        {
-            string file = System.IO.File.ReadAllText(pathToDir);
-            return highScoreTable = JsonUtility.FromJson(file, typeof(Dictionary<string, Data.SWHighScore>)) as Dictionary<string, Data.SWHighScore>;
-        }
-
-        public void SetScore(Data.SWValue scoreType)
-        {
-            currentScore += scoreType.score;
-
-            OnScoreAdded?.Invoke(scoreType);
-        }
-
-        public void SetMultiplier(Data.SWValue multiplierType)
-        {
-            currentMultiplier += multiplierType.multiplier;
-
-            OnMultiplierAdded?.Invoke(multiplierType);
         }
     }
 }

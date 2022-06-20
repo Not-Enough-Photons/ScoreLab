@@ -4,9 +4,16 @@ using UnityEngine;
 
 namespace NEP.Scoreworks.Core
 {
-    [MelonLoader.RegisterTypeInIl2Cpp]
-    public class Director : MonoBehaviour
+    public class Director 
     {
-        public Director(System.IntPtr ptr) : base(ptr) { }
+        public Director()
+        {
+            Start();
+        }
+
+        private void Start()
+        {
+
+        }
     }
 }

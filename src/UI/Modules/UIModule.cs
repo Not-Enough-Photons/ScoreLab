@@ -19,6 +19,8 @@ namespace NEP.Scoreworks.UI.Modules
         public Text subValueText;
         public Slider slider;
 
+        public Animator animator;
+
         public bool useDuration = true;
         public float maxDuration = 1f;
         private float _duration = 0f;
@@ -34,12 +36,12 @@ namespace NEP.Scoreworks.UI.Modules
             {
                 _duration += Time.deltaTime;
 
-                if(slider != null)
+                if (slider != null)
                 {
                     slider.value -= Time.deltaTime;
                 }
-                
-                if(_duration >= maxDuration)
+
+                if (_duration >= maxDuration)
                 {
                     gameObject.SetActive(false);
                     _duration = 0f;
@@ -54,7 +56,7 @@ namespace NEP.Scoreworks.UI.Modules
 
         public void SetText(Text text, string value)
         {
-            if(text != null)
+            if (text != null)
             {
                 text.text = value;
             }
@@ -67,7 +69,7 @@ namespace NEP.Scoreworks.UI.Modules
 
         private void SetSlider(float min, float max, float value)
         {
-            if(slider != null)
+            if (slider != null)
             {
                 slider.minValue = min;
                 slider.maxValue = max;

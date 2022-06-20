@@ -16,6 +16,7 @@ namespace NEP.Scoreworks
     public class Main : MelonMod
     {
         private Core.ScoreworksManager scoreworksManager;
+        private Core.Director director;
         private UI.UIManager uiManager;
 
         public override void OnApplicationStart()
@@ -25,12 +26,17 @@ namespace NEP.Scoreworks
 
         public override void OnSceneWasLoaded(int buildIndex, string sceneName)
         {
-            scoreworksManager = new GameObject("Scoreworks Manager").AddComponent<Core.ScoreworksManager>();
+            scoreworksManager = new Core.ScoreworksManager();
+            director = new Core.Director();
+            uiManager = new GameObject("UI Manager").AddComponent<UI.UIManager>();
         }
 
         public override void OnSceneWasUnloaded(int buildIndex, string sceneName)
         {
-            base.OnSceneWasUnloaded(buildIndex, sceneName);
+            if(scoreworksManager != null)
+            {
+                scoreworksManager = null;
+            }
         }
     }
 }

@@ -1,18 +1,72 @@
 ﻿namespace NEP.Scoreworks.Core.Data
 {
     [System.Serializable]
-    public struct SWValue
+    public class SWValue
     {
+        public SWValue(string name, int score)
+        {
+            this.name = name;
+            this.score = score;
+            this.type = SWValueType.Score;
+            this.maxDuration = 5f;
+
+            AddToList(this);
+        }
+
+        public SWValue(string name, float multiplier, float duration)
+        {
+            this.name = name;
+            this.multiplier = multiplier;
+            this.type = SWValueType.Multiplier;
+            this.maxDuration = duration;
+
+            AddToList(this);
+        }
+
         public string name;
         public int score;
         public float multiplier;
+
+        public bool cleaned = false;
 
         public SWValueType type;
 
         public float maxDuration;
         private float _duration;
 
-        private bool _flagForCleanup;
+        public static void AddToList(SWValue value)
+        {
+            ScoreworksManager.swValues.Add(value);
+
+            ScoreworksManager.instance.AddValues(value);
+
+            if (value.type == SWValueType.Score)
+            {
+                ScoreworksManager.OnScoreAdded?.Invoke(value);
+            }
+
+            if (value.type == SWValueType.Multiplier)
+            {
+                ScoreworksManager.OnMultiplierAdded?.Invoke(value);
+            }
+        } 
+
+        public static void RemoveFromList(SWValue value)
+        {
+            ScoreworksManager.swValues.Remove(value);
+
+            if (value.type == SWValueType.Multiplier)
+            {
+                value.cleaned = true;
+                ScoreworksManager.OnMultiplierRemoved?.Invoke(value);
+            }
+
+            if (value.type == SWValueType.Score)
+            {
+                value.cleaned = true;
+                ScoreworksManager.OnScoreRemoved?.Invoke(value);
+            }
+        }
 
         public void Update()
         {
@@ -20,11 +74,7 @@
 
             if(_duration >= maxDuration)
             {
-                if (!_flagForCleanup)
-                {
-                    ScoreworksManager.instance.swValues.Remove(this);
-                    _flagForCleanup = true;
-                }
+                RemoveFromList(this);
             }
         }
     }
