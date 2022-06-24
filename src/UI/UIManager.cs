@@ -8,6 +8,10 @@ using UnityEngine.UI;
 using NEP.Scoreworks.Core;
 using NEP.Scoreworks.UI.Modules;
 
+using ModThatIsNotMod;
+
+using Newtonsoft.Json.Linq;
+
 namespace NEP.Scoreworks.UI
 {
     [MelonLoader.RegisterTypeInIl2Cpp]
@@ -15,26 +19,39 @@ namespace NEP.Scoreworks.UI
     {
         public UIManager(System.IntPtr ptr) : base(ptr) { }
 
-        public struct UIPadding
+        public class UIPadding
         {
             public float leftPadding;
             public float rightPadding;
             public float topPadding;
             public float bottomPadding;
-
             public float convergence;
         }
 
-        public static UIManager instance { get; private set; }
+        public class UIScale
+        {
+            public float leftScale;
+            public float rightScale;
+            public float topScale;
+            public float bottomScale;
+            public float hudSize;
+        }
+
+        public static UIManager instance;
 
         public UIPadding paddingSettings;
+        public UIScale scaleSettings;
 
         public UIModule scoreModule;
         public UIModule multiplierModule;
         public UIModule highScoreModule;
 
-        public UIModule[] scoreSubModules;
-        public UIModule[] multiplierSubModules;
+        public List<UIModule> scoreSubModules;
+        public List<UIModule> multiplierSubModules;
+
+        public GameObject uiObject;
+
+        public Transform rootCanvas;
 
         public Transform leftRegion;
         public Transform rightRegion;
@@ -45,81 +62,169 @@ namespace NEP.Scoreworks.UI
         public float followDistance = 2f;
         public float followLerp = 6f;
 
-        private Vector3 lastTargetPos;
-        private Vector3 lastTargetRot;
-        
         private void Start()
         {
-            Transform root = transform.Find("RootCanvas");
+            rootCanvas = transform.GetChild(0);
 
-            leftRegion = root.Find("Region_Left");
-            rightRegion = root.Find("Region_Right");
-            topRegion = root.Find("Region_Top");
-            bottomRegion = root.Find("Region_Bottom");
+            // Regions
+            leftRegion = rootCanvas.Find("Region_Left");
+            rightRegion = rootCanvas.Find("Region_Right");
+            topRegion = rootCanvas.Find("Region_Top");
+            bottomRegion = rootCanvas.Find("Region_Bottom");
 
-            Transform left_R_Score = leftRegion.Find("Score");
-            Transform right_R_Multipliers = rightRegion.Find("Multipliers");
-            Transform left_R_LevelBest = left_R_Score.Find("LevelBest");
+            Transform scoreT = leftRegion.Find("Score");
+            Transform multT = rightRegion.Find("Multipliers");
 
-            scoreModule = left_R_Score.gameObject.AddComponent<UIModule>();
-            multiplierModule = right_R_Multipliers.gameObject.AddComponent<UIModule>();
-            highScoreModule = left_R_LevelBest.gameObject.AddComponent<UIModule>();
+            InitializeScore(scoreT);
+            InitializeMultipliers(scoreT);
+            InitializeHighScore(scoreT);
+            InitializeSubModuleScore(scoreT);
+            InitializeSubModuleMultipliers(multT);
 
-            Transform scoreList = scoreModule.transform.Find("List");
-            Transform multiplierList = multiplierModule.transform.Find("List");
+            // HUD settings
+            ReadHUDSettings();
 
-            for(int i = 0; i < scoreList.childCount; i++)
-            {
-                Transform current = scoreList.GetChild(i);
-
-                if (current)
-                {
-                    UIModule module = current.gameObject.AddComponent<UIModule>();
-
-                    module.moduleType = UIModuleType.Module_Score;
-                    module.subValueText = current.transform.Find("ScoreText").GetComponent<Text>();
-                }
-            }
-
-            for (int i = 0; i < multiplierList.childCount; i++)
-            {
-                Transform current = multiplierList.GetChild(i);
-
-                if (current)
-                {
-                    UIModule module = current.gameObject.AddComponent<UIModule>();
-
-                    module.moduleType = UIModuleType.Module_Multiplier;
-                    module.subValueText = current.transform.Find("MultiplierText").GetComponent<Text>();
-                    module.slider = current.transform.Find("MultiplierText/Slider").GetComponent<Slider>();
-                }
-            }
-
-            highScoreModule.moduleType = UIModuleType.Module_LastScore;
-            highScoreModule.useDuration = false;
-
-            paddingSettings = new UIPadding()
-            {
-                leftPadding = 50f,
-                rightPadding = 100f,
-                convergence = -400f
-            };
-
-            followTarget = GameObject.Find("Camera (eye)").transform;
-            followDistance = 4f;
+            // Follow distance and target
+            followTarget = Player.GetPlayerHead().transform;
+            followDistance = 3f;
             followLerp = 6f;
         }
 
         private void OnEnable()
         {
-            ScoreworksManager.OnScoreAdded += UpdateScoreModules;
-            ScoreworksManager.OnScoreAdded += UpdateScoreSubmodules;
+            ScoreworksManager.instance.OnScoreAdded += UpdateScoreModules;
+            ScoreworksManager.instance.OnScoreAdded += UpdateScoreSubmodules;
 
-            ScoreworksManager.OnMultiplierAdded += UpdateMultiplierModules;
-            ScoreworksManager.OnMultiplierAdded += UpdateMultiplierSubmodules;
-            ScoreworksManager.OnMultiplierRemoved += UpdateMultiplierModules;
-            ScoreworksManager.OnMultiplierRemoved += UpdateMultiplierSubmodules;
-            ScoreworksManager.OnMultiplierChanged += UpdateMultiplierModules;
+            ScoreworksManager.instance.OnMultiplierAdded += UpdateMultiplierModules;
+            ScoreworksManager.instance.OnMultiplierAdded += UpdateMultiplierSubmodules;
+
+            ScoreworksManager.instance.OnMultiplierRemoved += UpdateMultiplierModules;
+            ScoreworksManager.instance.OnMultiplierRemoved += UpdateMultiplierSubmodules;
+
+            ScoreworksManager.instance.OnMultiplierChanged += UpdateMultiplierModules;
+        }
+
+        private void OnDisable()
+        {
+            ScoreworksManager.instance.OnScoreAdded -= UpdateScoreModules;
+            ScoreworksManager.instance.OnScoreAdded -= UpdateScoreSubmodules;
+
+            ScoreworksManager.instance.OnMultiplierAdded -= UpdateMultiplierModules;
+            ScoreworksManager.instance.OnMultiplierAdded -= UpdateMultiplierSubmodules;
+
+            ScoreworksManager.instance.OnMultiplierRemoved -= UpdateMultiplierModules;
+            ScoreworksManager.instance.OnMultiplierRemoved -= UpdateMultiplierSubmodules;
+
+            ScoreworksManager.instance.OnMultiplierChanged -= UpdateMultiplierModules;
+        }
+
+        private void InitializeScore(Transform root)
+        {
+            // Score
+
+            Text scoreText = root.Find("ScoreText").GetComponent<Text>();
+
+            scoreModule = root.gameObject.AddComponent<UIModule>();
+            scoreModule.valueText = scoreText;
+            scoreModule.useDuration = false;
+        }
+
+        private void InitializeMultipliers(Transform root)
+        {
+            // Multipliers
+            Transform multiplierT = rightRegion.Find("Multipliers");
+            Text multiplierText = multiplierT.Find("MultiplierText").GetComponent<Text>();
+
+            multiplierModule = multiplierT.gameObject.AddComponent<UIModule>();
+            multiplierModule.valueText = multiplierText;
+            multiplierModule.useDuration = false;
+        }
+
+        private void InitializeHighScore(Transform root)
+        {
+            // High Score
+            Transform highScoreT = root.Find("LevelBest");
+            Text highScoreText = highScoreT.Find("ScoreBest").GetComponent<Text>();
+
+            highScoreModule = highScoreT.gameObject.AddComponent<UIModule>();
+            highScoreModule.valueText = highScoreText;
+            highScoreModule.useDuration = false;
+        }
+
+        private void InitializeSubModuleScore(Transform root)
+        {
+            // Sub Module - Score Blocks
+            scoreSubModules = new List<UIModule>();
+
+            Transform scoreListT = root.Find("List");
+
+            for (int i = 0; i < scoreListT.childCount; i++)
+            {
+                GameObject current = scoreListT.GetChild(i).gameObject;
+
+                if (current)
+                {
+                    UIModule module = current.AddComponent<UIModule>();
+                    module.subValueText = current.transform.Find("ScoreText").GetComponent<Text>();
+                    scoreSubModules?.Add(module);
+                    current.SetActive(false);
+                }
+            }
+        }
+
+        private void InitializeSubModuleMultipliers(Transform root)
+        {
+            // Sub Module - Score Blocks
+            multiplierSubModules = new List<UIModule>();
+
+            Transform multListT = root.Find("List");
+
+            for (int i = 0; i < multListT.childCount; i++)
+            {
+                GameObject current = multListT.GetChild(i).gameObject;
+
+                if (current)
+                {
+                    UIModule module = current.AddComponent<UIModule>();
+                    module.subValueText = current.transform.Find("MultiplierText").GetComponent<Text>();
+                    module.slider = current.transform.Find("MultiplierText/Slider").GetComponent<Slider>();
+                    multiplierSubModules?.Add(module);
+                    current.SetActive(false);
+                }
+            }
+        }
+
+        private void ReadHUDSettings()
+        {
+            string path = MelonLoader.MelonUtils.UserDataDirectory + "/Scoreworks/hud_settings.json";
+            string file = System.IO.File.ReadAllText(path);
+
+            var hudData = JObject.Parse(file);
+
+            var filePaddingSettings = hudData["padding"];
+
+            UIPadding padding = new UIPadding()
+            {
+                leftPadding = (float)filePaddingSettings["leftPadding"],
+                rightPadding = (float)filePaddingSettings["rightPadding"],
+                topPadding = (float)filePaddingSettings["topPadding"],
+                bottomPadding = (float)filePaddingSettings["bottomPadding"],
+            };
+
+            paddingSettings = padding;
+
+            var fileScaleSettings = hudData["size"];
+
+            UIScale scale = new UIScale()
+            {
+                leftScale = (float)fileScaleSettings["leftScale"],
+                rightScale = (float)fileScaleSettings["rightScale"],
+                topScale = (float)fileScaleSettings["topScale"],
+                bottomScale = (float)fileScaleSettings["bottomScale"],
+                hudSize = -(float)fileScaleSettings["hudScale"] / 1000f,
+            };
+
+            scaleSettings = scale;
         }
 
         private void UpdateScoreModules(Core.Data.SWValue value)
@@ -217,9 +322,24 @@ namespace NEP.Scoreworks.UI
             bottomRegion.transform.localPosition = bottomRegion.InverseTransformDirection(bPadding);
         }
 
-        private void Update()
+        private void UpdateRegionScale()
+        {
+            leftRegion.localScale = Vector3.one * scaleSettings.leftScale;
+            rightRegion.localScale = Vector3.one * scaleSettings.rightScale;
+            topRegion.localScale = Vector3.one * scaleSettings.topScale;
+            bottomRegion.localScale = Vector3.one * scaleSettings.bottomScale;
+            rootCanvas.localScale = Vector3.one * scaleSettings.hudSize;
+        }
+
+        public void Update()
         {
             UpdatePadding();
+            UpdateRegionScale();
+
+            if(followTarget == null)
+            {
+                return;
+            }
 
             Vector3 move = Vector3.Lerp(transform.position, followTarget.position + followTarget.forward * followDistance, followLerp * Time.deltaTime);
             Quaternion lookRot = Quaternion.LookRotation(followTarget.forward);
@@ -236,12 +356,6 @@ namespace NEP.Scoreworks.UI
                     current.LookAt(followTarget);
                 }
             }
-        }
-
-        private void LateUpdate()
-        {
-            lastTargetPos = followTarget.position;
-            lastTargetRot = followTarget.eulerAngles;
         }
     }
 }

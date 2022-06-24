@@ -1,6 +1,10 @@
-﻿using MelonLoader;
+﻿using System.Linq;
+
+using MelonLoader;
 
 using UnityEngine;
+
+using UnhollowerBaseLib;
 
 namespace NEP.Scoreworks
 {
@@ -15,28 +19,59 @@ namespace NEP.Scoreworks
 
     public class Main : MelonMod
     {
-        private Core.ScoreworksManager scoreworksManager;
+        public static Main instance;
+        public GameObject uiObject { get; private set; }
+
         private Core.Director director;
         private UI.UIManager uiManager;
 
+        private AssetBundle bundle;
+
+        private Il2CppReferenceArray<Object> bundleObjects;
+
         public override void OnApplicationStart()
         {
-            base.OnApplicationStart();
+            instance = this;
+
+            bundle = GetBundle();
+            bundleObjects = bundle.LoadAllAssets();
+
+            foreach(Object obj in bundleObjects)
+            {
+                obj.hideFlags = HideFlags.DontUnloadUnusedAsset;
+            }
+        }
+
+        public override void OnApplicationLateStart()
+        {
+            new Core.ScoreworksManager();
         }
 
         public override void OnSceneWasLoaded(int buildIndex, string sceneName)
         {
-            scoreworksManager = new Core.ScoreworksManager();
+            Core.ScoreworksManager.instance.currentScore = 0;
+            Core.ScoreworksManager.instance.currentMultiplier = 0f;
+
             director = new Core.Director();
-            uiManager = new GameObject("UI Manager").AddComponent<UI.UIManager>();
+            new Audio.AudioManager();
+
+            uiObject = GameObject.Instantiate(GetObject("SWHud").Cast<GameObject>());
+            uiManager = uiObject.AddComponent<UI.UIManager>();
         }
 
-        public override void OnSceneWasUnloaded(int buildIndex, string sceneName)
+        public override void OnUpdate()
         {
-            if(scoreworksManager != null)
-            {
-                scoreworksManager = null;
-            }
+            Core.ScoreworksManager.instance.Update();
+        }
+
+        private AssetBundle GetBundle()
+        {
+            return AssetBundle.LoadFromFile(MelonUtils.UserDataDirectory + "/Scoreworks/scoreworks.pack");
+        }
+
+        private Object GetObject(string name)
+        {
+            return bundleObjects.FirstOrDefault((obj) => obj.name == name);
         }
     }
 }

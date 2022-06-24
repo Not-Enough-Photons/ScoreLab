@@ -1,6 +1,9 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.IO;
+
 using UnityEngine;
+
+using AudioImportLib;
 
 namespace NEP.Scoreworks.Audio
 {
@@ -11,20 +14,42 @@ namespace NEP.Scoreworks.Audio
             Start();
         }
 
-        public AudioClip[] scoreGet;
-        public AudioClip[] multiplierGet;
+        public List<AudioClip> scoreGet;
+        public List<AudioClip> multiplierGet;
 
         private AudioSource source;
 
         private void Awake()
         {
+            scoreGet = new List<AudioClip>();
+            multiplierGet = new List<AudioClip>();
+
             source = new GameObject("Scoreworks Audio Manager").AddComponent<AudioSource>();
         }
 
         private void Start()
         {
-            Core.ScoreworksManager.OnScoreAdded += (data) => OnScoreAdded();
-            Core.ScoreworksManager.OnMultiplierAdded += (data) => OnMultiplierAdded();
+            string basePath = MelonLoader.MelonUtils.UserDataDirectory + "/";
+            string soundPath = basePath + "Scoreworks/Audio/";
+
+            foreach(string file in Directory.GetFiles(soundPath))
+            {
+                string baseSoundName = file.Substring(2);
+
+                if (baseSoundName.StartsWith("score"))
+                {
+                    AudioClip clip = API.LoadAudioClip(baseSoundName, true);
+                    scoreGet?.Add(clip);
+                }
+                else if (baseSoundName.StartsWith("multiplier"))
+                {
+                    AudioClip clip = API.LoadAudioClip(baseSoundName, true);
+                    multiplierGet?.Add(clip);
+                }
+            }
+
+            Core.ScoreworksManager.instance.OnScoreAdded += (data) => OnScoreAdded();
+            Core.ScoreworksManager.instance.OnMultiplierAdded += (data) => OnMultiplierAdded();
         }
 
         private void OnScoreAdded()
@@ -34,7 +59,7 @@ namespace NEP.Scoreworks.Audio
                 return;
             }
 
-            int rand = Random.Range(0, scoreGet.Length);
+            int rand = Random.Range(0, scoreGet.Count);
             AudioClip random = scoreGet[rand];
 
             if(random == null)
@@ -53,7 +78,7 @@ namespace NEP.Scoreworks.Audio
                 return;
             }
 
-            int rand = Random.Range(0, multiplierGet.Length);
+            int rand = Random.Range(0, multiplierGet.Count);
             AudioClip random = multiplierGet[rand];
 
             if (random == null)
