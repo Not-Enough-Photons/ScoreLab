@@ -66,7 +66,7 @@ namespace NEP.Scoreworks
 
         private AssetBundle GetBundle()
         {
-            return AssetBundle.LoadFromFile(MelonUtils.UserDataDirectory + "/Scoreworks/scoreworks.pack");
+            return AssetBundle.LoadFromFile(MelonUtils.UserDataDirectory + "/Scoreworks/basehud.hud");
         }
 
         private Object GetObject(string name)

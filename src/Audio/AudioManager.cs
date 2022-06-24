@@ -11,6 +11,7 @@ namespace NEP.Scoreworks.Audio
     {
         public AudioManager()
         {
+            Awake();
             Start();
         }
 
@@ -34,16 +35,19 @@ namespace NEP.Scoreworks.Audio
 
             foreach(string file in Directory.GetFiles(soundPath))
             {
-                string baseSoundName = file.Substring(2);
-
-                if (baseSoundName.StartsWith("score"))
+                if (string.IsNullOrEmpty(file))
                 {
-                    AudioClip clip = API.LoadAudioClip(baseSoundName, true);
+                    continue;
+                }
+
+                AudioClip clip = API.LoadAudioClip(file, true);
+
+                if (clip.name.StartsWith("sw_score"))
+                {
                     scoreGet?.Add(clip);
                 }
-                else if (baseSoundName.StartsWith("multiplier"))
+                else if (clip.name.StartsWith("sw_multiplier"))
                 {
-                    AudioClip clip = API.LoadAudioClip(baseSoundName, true);
                     multiplierGet?.Add(clip);
                 }
             }

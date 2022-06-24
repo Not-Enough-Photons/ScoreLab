@@ -35,6 +35,8 @@ namespace NEP.Scoreworks.UI
             public float topScale;
             public float bottomScale;
             public float hudSize;
+            public float followDistance;
+            public float followLerp;
         }
 
         public static UIManager instance;
@@ -209,6 +211,7 @@ namespace NEP.Scoreworks.UI
                 rightPadding = (float)filePaddingSettings["rightPadding"],
                 topPadding = (float)filePaddingSettings["topPadding"],
                 bottomPadding = (float)filePaddingSettings["bottomPadding"],
+                convergence = (float)filePaddingSettings["convergence"],
             };
 
             paddingSettings = padding;
@@ -221,7 +224,9 @@ namespace NEP.Scoreworks.UI
                 rightScale = (float)fileScaleSettings["rightScale"],
                 topScale = (float)fileScaleSettings["topScale"],
                 bottomScale = (float)fileScaleSettings["bottomScale"],
-                hudSize = -(float)fileScaleSettings["hudScale"] / 1000f,
+                hudSize = (float)fileScaleSettings["hudScale"],
+                followDistance = (float)fileScaleSettings["followDistance"],
+                followLerp = (float)fileScaleSettings["followLerp"],
             };
 
             scaleSettings = scale;
@@ -234,7 +239,7 @@ namespace NEP.Scoreworks.UI
                 if (scoreModule == null)
                 {
                     return;
-                }
+                };
 
                 scoreModule.SetText(scoreModule.nameText, value.name);
                 scoreModule.SetText(scoreModule.valueText, ScoreworksManager.instance.currentScore.ToString());
@@ -324,11 +329,11 @@ namespace NEP.Scoreworks.UI
 
         private void UpdateRegionScale()
         {
-            leftRegion.localScale = Vector3.one * scaleSettings.leftScale;
-            rightRegion.localScale = Vector3.one * scaleSettings.rightScale;
-            topRegion.localScale = Vector3.one * scaleSettings.topScale;
-            bottomRegion.localScale = Vector3.one * scaleSettings.bottomScale;
-            rootCanvas.localScale = Vector3.one * scaleSettings.hudSize;
+            leftRegion.localScale = Vector3.one * scaleSettings.leftScale / 10f;
+            rightRegion.localScale = Vector3.one * scaleSettings.rightScale / 10f;
+            topRegion.localScale = Vector3.one * scaleSettings.topScale / 10f;
+            bottomRegion.localScale = Vector3.one * scaleSettings.bottomScale / 10f;
+            rootCanvas.localScale = new Vector3(-scaleSettings.hudSize / 100f, scaleSettings.hudSize / 100f, scaleSettings.hudSize / 100f);
         }
 
         public void Update()
@@ -341,7 +346,7 @@ namespace NEP.Scoreworks.UI
                 return;
             }
 
-            Vector3 move = Vector3.Lerp(transform.position, followTarget.position + followTarget.forward * followDistance, followLerp * Time.deltaTime);
+            Vector3 move = Vector3.Lerp(transform.position, followTarget.position + followTarget.forward * scaleSettings.followDistance, scaleSettings.followLerp * Time.deltaTime);
             Quaternion lookRot = Quaternion.LookRotation(followTarget.forward);
 
             transform.position = move;
