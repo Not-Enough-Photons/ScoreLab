@@ -35,11 +35,6 @@ namespace NEP.Scoreworks.Core
                         return;
                     }
 
-                    if(__instance.round > 1)
-                    {
-                        new Data.SWValue(Data.SWScoreType.SW_SCORE_FINISH_ARENA_ROUND);
-                    }
-
                     new Data.SWValue(Data.SWScoreType.SW_SCORE_FINISH_ARENA_WAVE);
                 }
             }
@@ -86,13 +81,12 @@ namespace NEP.Scoreworks.Core
                     {
                         new Data.SWValue(Data.SWScoreType.SW_SCORE_CRABCEST);
                     }
+                    else
+                    {
+                        new Data.SWValue(Data.SWScoreType.SW_SCORE_ATTACH_CRABLET);
+                    }
                 }
             }
-        }
-
-        public void Update()
-        {
-
         }
     }
 }

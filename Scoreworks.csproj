@@ -48,6 +48,7 @@
     <Compile Include="src\UI\Modules\UIModule.cs" />
     <Compile Include="src\UI\UIManager.cs" />
     <Compile Include="src\UI\UIModuleType.cs" />
+    <Compile Include="src\UI\UIRegion.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="0Harmony, Version=2.9.0.0, Culture=neutral, processorArchitecture=MSIL">

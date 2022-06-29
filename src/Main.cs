@@ -42,13 +42,19 @@ namespace NEP.Scoreworks
             }
         }
 
-        public override void OnApplicationLateStart()
-        {
-            new Core.ScoreworksManager();
-        }
+        public override void OnApplicationLateStart() => new Core.ScoreworksManager();
 
         public override void OnSceneWasLoaded(int buildIndex, string sceneName)
         {
+            Core.Data.SWHighScore highScore = new Core.Data.SWHighScore()
+            {
+                currentScene = Core.ScoreworksManager.instance.currentScene,
+                highScore = Core.ScoreworksManager.instance.currentHighScore
+            };
+
+            Core.ScoreworksManager.instance.SaveHighScore(highScore);
+
+            Core.ScoreworksManager.instance.OnLevelChange(sceneName);
             Core.ScoreworksManager.instance.currentScore = 0;
             Core.ScoreworksManager.instance.currentMultiplier = 0f;
 
@@ -59,10 +65,7 @@ namespace NEP.Scoreworks
             uiManager = uiObject.AddComponent<UI.UIManager>();
         }
 
-        public override void OnUpdate()
-        {
-            Core.ScoreworksManager.instance.Update();
-        }
+        public override void OnUpdate() => Core.ScoreworksManager.instance?.Update();
 
         private AssetBundle GetBundle()
         {

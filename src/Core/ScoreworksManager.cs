@@ -28,13 +28,18 @@ namespace NEP.Scoreworks.Core
         public Action<Data.SWValue> OnMultiplierAdded;
         public Action<Data.SWValue> OnMultiplierRemoved;
 
+        public Action<string, int> OnHighScoreUpdated;
+
         public static Dictionary<Data.SWScoreType, Data.SWValueTemplate> scoreValues;
         public static Dictionary<Data.SWMultiplierType, Data.SWValueTemplate> multValues;
 
-        public static Dictionary<string, Data.SWHighScore> highScoreTable = new Dictionary<string, Data.SWHighScore>();
+        public Dictionary<string, Data.SWHighScore> highScoreTable;
 
         public int currentScore;
         public float currentMultiplier;
+
+        public int currentHighScore;
+        public string currentScene;
 
         private void Awake()
         {
@@ -46,6 +51,9 @@ namespace NEP.Scoreworks.Core
 
         private void Start()
         {
+            highScoreTable = new Dictionary<string, Data.SWHighScore>();
+
+            currentScene = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
             OnMultiplierRemoved += RemoveMultiplier;
 
             BuildScoreValues();
@@ -110,6 +118,12 @@ namespace NEP.Scoreworks.Core
             if (value.type == Data.SWValueType.Score)
             {
                 currentScore += value.score;
+
+                if(currentScore >= currentHighScore)
+                {
+                    currentHighScore = currentScore;
+                    OnHighScoreUpdated?.Invoke(currentScene, currentHighScore);
+                }
             }
 
             if (value.type == Data.SWValueType.Multiplier)
@@ -127,9 +141,39 @@ namespace NEP.Scoreworks.Core
             }
         }
 
+        public void SaveHighScore(Data.SWHighScore score)
+        {
+            if (highScoreTable.ContainsKey(score.currentScene))
+            {
+                highScoreTable[score.currentScene].highScore = currentHighScore;
+            }
+            else
+            {
+                highScoreTable.Add(score.currentScene, score);
+            }
+
+            string serialized = JsonConvert.SerializeObject(highScoreTable, Formatting.Indented);
+
+            System.IO.File.WriteAllText(MelonLoader.MelonUtils.UserDataDirectory + "/Scoreworks/sw_highscores.json", serialized);
+        }
+
+        public void OnLevelChange(string currentScene)
+        {
+            highScoreTable = LoadHighScoreTable(MelonLoader.MelonUtils.UserDataDirectory + "/Scoreworks/sw_highscores.json");
+            this.currentScene = currentScene;
+        }
+
         public Data.SWHighScore RetrieveHighScore(string sceneName)
         {
             return highScoreTable[sceneName];
+        }
+
+        public Dictionary<string, Data.SWHighScore> LoadHighScoreTable(string path)
+        {
+            string data = System.IO.File.ReadAllText(path);
+            var highScoreTable = JsonConvert.DeserializeObject<Dictionary<string, Data.SWHighScore>>(data);
+
+            return highScoreTable;
         }
     }
 }
