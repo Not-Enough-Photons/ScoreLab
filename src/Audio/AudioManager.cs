@@ -52,8 +52,8 @@ namespace NEP.Scoreworks.Audio
                 }
             }
 
-            Core.ScoreworksManager.instance.OnScoreAdded += (data) => OnScoreAdded();
-            Core.ScoreworksManager.instance.OnMultiplierAdded += (data) => OnMultiplierAdded();
+            Core.API.OnScoreAdded += (data) => OnScoreAdded();
+            Core.API.OnMultiplierAdded += (data) => OnMultiplierAdded();
         }
 
         private void OnScoreAdded()

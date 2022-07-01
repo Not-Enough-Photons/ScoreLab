@@ -19,28 +19,6 @@ namespace NEP.Scoreworks.UI
     {
         public UIManager(System.IntPtr ptr) : base(ptr) { }
 
-        [System.Serializable]
-        public class UIPadding
-        {
-            public float leftPadding;
-            public float rightPadding;
-            public float topPadding;
-            public float bottomPadding;
-            public float convergence;
-        }
-
-        [System.Serializable]
-        public class UIScale
-        {
-            public float leftScale;
-            public float rightScale;
-            public float topScale;
-            public float bottomScale;
-            public float hudSize;
-            public float followDistance;
-            public float followLerp;
-        }
-
         public static UIManager instance;
 
         public UIPadding paddingSettings;
@@ -49,9 +27,6 @@ namespace NEP.Scoreworks.UI
         public UIModule scoreModule;
         public UIModule multiplierModule;
         public UIModule highScoreModule;
-
-        public List<UIModule> scoreSubModules;
-        public List<UIModule> multiplierSubModules;
 
         public UIRegion[] regions;
 
@@ -65,53 +40,56 @@ namespace NEP.Scoreworks.UI
         public UIRegion bottomRegion;
 
         public Transform followTarget = null;
-        public float followDistance = 2f;
-        public float followLerp = 6f;
+
+        public bool useHead = true;
+
+        private Transform playerHead = Player.GetPlayerHead().transform;
+        private Transform playerTorso;
 
         private void Start()
         {
+            StressLevelZero.Rig.RigManager rigManager = Player.GetRigManager().GetComponent<StressLevelZero.Rig.RigManager>();
+            playerTorso = rigManager.physicsRig.m_chest;
+
             rootCanvas = transform.GetChild(0);
 
             InitializeRegions();
 
-            UpdateHighScoreModule(null);
-
             // HUD settings
             ReadHUDSettings();
 
-            // Follow distance and target
-            followTarget = Player.GetPlayerHead().transform;
-            followDistance = 3f;
-            followLerp = 6f;
+            // Update all texts for when the player changes HUDs
+            UpdateModulesOnLoad();
         }
 
         private void OnEnable()
         {
-            ScoreworksManager.instance.OnScoreAdded += UpdateScoreModules;
-            ScoreworksManager.instance.OnScoreAdded += UpdateScoreSubmodules;
-            //ScoreworksManager.instance.OnScoreAdded += UpdateHighScoreModule;
+            API.OnScoreAdded += UpdateScoreModules;
+            API.OnScoreAdded += UpdateScoreSubmodules;
+            API.OnHighScoreReached += UpdateHighScoreModule;
 
-            ScoreworksManager.instance.OnMultiplierAdded += UpdateMultiplierModules;
-            ScoreworksManager.instance.OnMultiplierAdded += UpdateMultiplierSubmodules;
+            API.OnMultiplierAdded += UpdateMultiplierModules;
+            API.OnMultiplierAdded += UpdateMultiplierSubmodules;
 
-            ScoreworksManager.instance.OnMultiplierRemoved += UpdateMultiplierModules;
-            ScoreworksManager.instance.OnMultiplierRemoved += UpdateMultiplierSubmodules;
+            API.OnMultiplierRemoved += UpdateMultiplierModules;
+            API.OnMultiplierRemoved += UpdateMultiplierSubmodules;
 
-            ScoreworksManager.instance.OnMultiplierChanged += UpdateMultiplierModules;
+            API.OnMultiplierChanged += UpdateMultiplierModules;
         }
 
         private void OnDisable()
         {
-            ScoreworksManager.instance.OnScoreAdded -= UpdateScoreModules;
-            ScoreworksManager.instance.OnScoreAdded -= UpdateScoreSubmodules;
+            API.OnScoreAdded -= UpdateScoreModules;
+            API.OnScoreAdded -= UpdateScoreSubmodules;
+            API.OnHighScoreReached -= UpdateHighScoreModule;
 
-            ScoreworksManager.instance.OnMultiplierAdded -= UpdateMultiplierModules;
-            ScoreworksManager.instance.OnMultiplierAdded -= UpdateMultiplierSubmodules;
+            API.OnMultiplierAdded -= UpdateMultiplierModules;
+            API.OnMultiplierAdded -= UpdateMultiplierSubmodules;
 
-            ScoreworksManager.instance.OnMultiplierRemoved -= UpdateMultiplierModules;
-            ScoreworksManager.instance.OnMultiplierRemoved -= UpdateMultiplierSubmodules;
+            API.OnMultiplierRemoved -= UpdateMultiplierModules;
+            API.OnMultiplierRemoved -= UpdateMultiplierSubmodules;
 
-            ScoreworksManager.instance.OnMultiplierChanged -= UpdateMultiplierModules;
+            API.OnMultiplierChanged -= UpdateMultiplierModules;
         }
 
         private void InitializeRegions()
@@ -168,38 +146,8 @@ namespace NEP.Scoreworks.UI
 
         private void ReadHUDSettings()
         {
-            string path = MelonLoader.MelonUtils.UserDataDirectory + "/Scoreworks/hud_settings.json";
-            string file = System.IO.File.ReadAllText(path);
-
-            var hudData = JObject.Parse(file);
-
-            var filePaddingSettings = hudData["padding"];
-
-            UIPadding padding = new UIPadding()
-            {
-                leftPadding = (float)filePaddingSettings["leftPadding"],
-                rightPadding = (float)filePaddingSettings["rightPadding"],
-                topPadding = (float)filePaddingSettings["topPadding"],
-                bottomPadding = (float)filePaddingSettings["bottomPadding"],
-                convergence = (float)filePaddingSettings["convergence"],
-            };
-
-            paddingSettings = padding;
-
-            var fileScaleSettings = hudData["size"];
-
-            UIScale scale = new UIScale()
-            {
-                leftScale = (float)fileScaleSettings["leftScale"],
-                rightScale = (float)fileScaleSettings["rightScale"],
-                topScale = (float)fileScaleSettings["topScale"],
-                bottomScale = (float)fileScaleSettings["bottomScale"],
-                hudSize = (float)fileScaleSettings["hudScale"],
-                followDistance = (float)fileScaleSettings["followDistance"],
-                followLerp = (float)fileScaleSettings["followLerp"],
-            };
-
-            scaleSettings = scale;
+            paddingSettings = Core.Data.DataManager.ReadPadding();
+            scaleSettings = Core.Data.DataManager.ReadScale();
         }
 
         private void UpdateScoreModules(Core.Data.SWValue value)
@@ -257,7 +205,7 @@ namespace NEP.Scoreworks.UI
                 }
 
                 multiplierModule.SetText(multiplierModule.nameText, value.name);
-                multiplierModule.SetText(multiplierModule.valueText, ScoreworksManager.instance.currentMultiplier.ToString() + "x");
+                multiplierModule.SetText(multiplierModule.valueText, ScoreworksManager.instance.currentMultiplier.ToString());
                 multiplierModule.SetText(multiplierModule.subValueText, value.multiplier.ToString());
                 multiplierModule.SetDuration(value.maxDuration);
             }
@@ -294,7 +242,7 @@ namespace NEP.Scoreworks.UI
             }
         }
 
-        private void UpdateHighScoreModule(Core.Data.SWValue value)
+        private void UpdateHighScoreModule(string currentScene, int newScore)
         {
             if (highScoreModule == null)
             {
@@ -307,6 +255,14 @@ namespace NEP.Scoreworks.UI
             highScoreModule.gameObject.SetActive(true);
         }
 
+        private void UpdateModulesOnLoad()
+        {
+            scoreModule?.SetText(scoreModule.valueText, ScoreworksManager.instance.currentScore.ToString());
+            multiplierModule?.SetText(multiplierModule.valueText, ScoreworksManager.instance.currentMultiplier.ToString());
+            highScoreModule?.SetText(highScoreModule.nameText, ScoreworksManager.instance.currentScene);
+            highScoreModule?.SetText(highScoreModule.valueText, ScoreworksManager.instance.currentHighScore.ToString());
+        }
+
         private void UpdatePadding()
         {
             Transform leftRegionT = this.leftRegion.transform;
@@ -314,10 +270,15 @@ namespace NEP.Scoreworks.UI
             Transform topRegionT = this.topRegion.transform;
             Transform bottomRegionT = this.bottomRegion.transform;
 
-            Vector3 lPadding = -leftRegionT.right * (paddingSettings.leftPadding + paddingSettings.convergence);
-            Vector3 rPadding = rightRegionT.right * (paddingSettings.rightPadding + paddingSettings.convergence);
-            Vector3 tPadding = topRegionT.up * (paddingSettings.topPadding + paddingSettings.convergence);
-            Vector3 bPadding = -bottomRegionT.up * (paddingSettings.bottomPadding + paddingSettings.convergence);
+            Vector3 paddingLeft = new Vector3(paddingSettings.leftPadding[0], paddingSettings.leftPadding[1], paddingSettings.leftPadding[2]);
+            Vector3 paddingRight = new Vector3(paddingSettings.rightPadding[0], paddingSettings.rightPadding[1], paddingSettings.rightPadding[2]);
+            Vector3 paddingTop = new Vector3(paddingSettings.topPadding[0], paddingSettings.topPadding[1], paddingSettings.topPadding[2]);
+            Vector3 paddingBottom = new Vector3(paddingSettings.bottomPadding[0], paddingSettings.bottomPadding[1], paddingSettings.bottomPadding[2]);
+
+            Vector3 lPadding = -leftRegionT.right + (leftRegionT.InverseTransformDirection(paddingLeft * 100));
+            Vector3 rPadding = rightRegionT.right + (rightRegionT.InverseTransformDirection(paddingRight * 100));
+            Vector3 tPadding = topRegionT.up + (topRegionT.InverseTransformDirection(paddingTop * 100));
+            Vector3 bPadding = -bottomRegionT.up + (bottomRegionT.InverseTransformDirection(paddingBottom * 100));
 
             leftRegion.transform.localPosition = leftRegionT.InverseTransformDirection(lPadding);
             rightRegion.transform.localPosition = rightRegionT.InverseTransformDirection(rPadding);
@@ -343,28 +304,22 @@ namespace NEP.Scoreworks.UI
         {
             UpdatePadding();
             UpdateRegionScale();
+            
+            followTarget = useHead ? playerHead : playerTorso;
+        }
 
+        public void FixedUpdate()
+        {
             if (followTarget == null)
             {
                 return;
             }
 
-            Vector3 move = Vector3.Lerp(transform.position, followTarget.position + followTarget.forward * scaleSettings.followDistance, scaleSettings.followLerp * Time.deltaTime);
-            Quaternion lookRot = Quaternion.LookRotation(followTarget.forward);
+            Vector3 move = Vector3.Lerp(transform.position, followTarget.position + followTarget.forward * scaleSettings.followDistance, scaleSettings.followLerp * Time.fixedDeltaTime);
+            Quaternion lookRot = Quaternion.LookRotation(-followTarget.forward);
 
             transform.position = move;
-            transform.GetChild(0).rotation = lookRot;
-
-            for (int i = 0; i < transform.childCount; i++)
-            {
-                Transform current = transform.GetChild(i);
-
-                if (current)
-                {
-                    current.LookAt(followTarget);
-                }
-            }
+            rootCanvas.rotation = lookRot;
         }
     }
 }
-

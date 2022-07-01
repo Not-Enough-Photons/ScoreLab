@@ -35,12 +35,14 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="src\Audio\AudioManager.cs" />
-    <Compile Include="src\Core\Data\SWHighScore.cs" />
-    <Compile Include="src\Core\Data\SWMultiplierType.cs" />
-    <Compile Include="src\Core\Data\SWScoreType.cs" />
-    <Compile Include="src\Core\Data\SWValue.cs" />
-    <Compile Include="src\Core\Data\SWValueTemplate.cs" />
-    <Compile Include="src\Core\Data\SWValueType.cs" />
+    <Compile Include="src\Core\API.cs" />
+    <Compile Include="src\Core\Data\DataManager.cs" />
+    <Compile Include="src\Core\Data\Types\SWHighScore.cs" />
+    <Compile Include="src\Core\Data\Types\SWMultiplierType.cs" />
+    <Compile Include="src\Core\Data\Types\SWScoreType.cs" />
+    <Compile Include="src\Core\Data\Types\SWValue.cs" />
+    <Compile Include="src\Core\Data\Types\SWValueTemplate.cs" />
+    <Compile Include="src\Core\Data\Types\SWValueType.cs" />
     <Compile Include="src\Core\Director.cs" />
     <Compile Include="src\Core\ScoreworksManager.cs" />
     <Compile Include="src\Main.cs" />
@@ -48,7 +50,9 @@
     <Compile Include="src\UI\Modules\UIModule.cs" />
     <Compile Include="src\UI\UIManager.cs" />
     <Compile Include="src\UI\UIModuleType.cs" />
+    <Compile Include="src\UI\UIPadding.cs" />
     <Compile Include="src\UI\UIRegion.cs" />
+    <Compile Include="src\UI\UIScale.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="0Harmony, Version=2.9.0.0, Culture=neutral, processorArchitecture=MSIL">
