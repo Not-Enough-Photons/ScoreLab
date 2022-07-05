@@ -29,6 +29,7 @@ namespace NEP.Scoreworks.Core.Data
         {
             if (highScoreTable.ContainsKey(score.currentScene))
             {
+                highScoreTable[score.currentScene].currentScene = ScoreworksManager.instance.currentScene;
                 highScoreTable[score.currentScene].highScore = ScoreworksManager.instance.currentHighScore;
             }
             else
@@ -159,27 +160,22 @@ namespace NEP.Scoreworks.Core.Data
             return padding;
         }
 
-        public static UI.UIScale ReadScale()
+        public static UI.UISettings ReadHUDSettings()
         {
             string path = MelonLoader.MelonUtils.UserDataDirectory + "/Scoreworks/hud_settings.json";
             string file = System.IO.File.ReadAllText(path);
 
             var hudData = JObject.Parse(file);
 
-            var fileScaleSettings = hudData["size"];
+            var fileScaleSettings = hudData["settings"];
 
-            UI.UIScale scale = new UI.UIScale()
+            UI.UISettings hudSettings = new UI.UISettings()
             {
-                leftScale = (float)fileScaleSettings["leftScale"],
-                rightScale = (float)fileScaleSettings["rightScale"],
-                topScale = (float)fileScaleSettings["topScale"],
-                bottomScale = (float)fileScaleSettings["bottomScale"],
-                hudSize = (float)fileScaleSettings["hudScale"],
                 followDistance = (float)fileScaleSettings["followDistance"],
                 followLerp = (float)fileScaleSettings["followLerp"],
             };
 
-            return scale;
+            return hudSettings;
         }
     }
 

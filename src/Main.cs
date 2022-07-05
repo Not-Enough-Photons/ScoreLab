@@ -8,6 +8,9 @@ using UnityEngine;
 
 using UnhollowerBaseLib;
 
+using NEP.Scoreworks.Core.Data;
+using NEP.Scoreworks.Utilities;
+
 namespace NEP.Scoreworks
 {
     public static class BuildInfo
@@ -22,12 +25,11 @@ namespace NEP.Scoreworks
     public class Main : MelonMod
     {
         public static Main instance;
-        public GameObject uiObject { get; private set; }
 
         public string lastUI;
 
-        private Core.Director director;
-        private UI.UIManager uiManager;
+        public GameObject uiObject { get; private set; }
+        public UI.UIManager uiComponent { get; private set; }
 
         private string[] bundleFiles;
         private AssetBundle[] bundles;
@@ -38,6 +40,8 @@ namespace NEP.Scoreworks
         public override void OnApplicationStart()
         {
             instance = this;
+
+            Utilities.Utilities.InitializeMelonPrefs();
 
             bundleFiles = System.IO.Directory.GetFiles(MelonUtils.UserDataDirectory + "/Scoreworks/HUDs/");
             bundles = new AssetBundle[bundleFiles.Length];
@@ -53,32 +57,49 @@ namespace NEP.Scoreworks
                 customUIs[i].hideFlags = HideFlags.DontUnloadUnusedAsset;
             }
 
-            SetupBonemenu();
-        }
+            lastUI = Utilities.Utilities.GetHUDFromPref();
 
-        public override void OnApplicationLateStart()
-        {
+            SetupBonemenu();
+
             new Core.ScoreworksManager();
-            Core.Data.DataManager.Initialize();
+            DataManager.Initialize();
         }
 
         public override void OnSceneWasLoaded(int buildIndex, string sceneName)
         {
-            Core.Data.SWHighScore highScore = new Core.Data.SWHighScore()
+            if (DataManager.highScoreTable.ContainsKey(sceneName))
             {
-                currentScene = Core.ScoreworksManager.instance.currentScene,
-                highScore = Core.ScoreworksManager.instance.currentHighScore
-            };
+                SWHighScore highScore = new SWHighScore()
+                {
+                    currentScene = DataManager.highScoreTable[sceneName].currentScene,
+                    highScore = DataManager.highScoreTable[sceneName].highScore
+                };
 
-            Core.Data.DataManager.SaveHighScore(highScore);
+                Core.ScoreworksManager.instance.currentScene = highScore.currentScene;
+                Core.ScoreworksManager.instance.currentHighScore = highScore.highScore;
+            }
 
             Core.ScoreworksManager.instance.currentScore = 0;
             Core.ScoreworksManager.instance.currentMultiplier = 0f;
 
-            director = new Core.Director();
+            new Core.Director();
             new Audio.AudioManager();
+        }
 
-            //SpawnHUD(lastUI);
+        public override void OnSceneWasUnloaded(int buildIndex, string sceneName)
+        {
+            if(sceneName == "NEW OBJECT COLLECTOR" || sceneName == "loadingScene" || sceneName == "")
+            {
+                return;
+            }
+
+            SWHighScore highScore = new SWHighScore()
+            {
+                currentScene = sceneName,
+                highScore = Core.ScoreworksManager.instance.currentScore
+            };
+
+            DataManager.SaveHighScore(highScore);
         }
 
         public override void OnUpdate() => Core.ScoreworksManager.instance?.Update();
@@ -88,9 +109,7 @@ namespace NEP.Scoreworks
             MenuCategory mainCategory = MenuManager.CreateCategory("Scoreworks Settings", Color.white);
             MenuCategory hudCategory = mainCategory.CreateSubCategory("HUDs", Color.blue);
             MenuCategory hudSettingsCategory = mainCategory.CreateSubCategory("HUD Settings", Color.white);
-
-            SetupPaddingCategory(hudSettingsCategory);
-            SetupSizeCategory(hudSettingsCategory);
+            SetupHUDSettings(hudSettingsCategory);
 
             foreach(GameObject uiObject in customUIs)
             {
@@ -98,70 +117,29 @@ namespace NEP.Scoreworks
             }
         }
 
-        private void SetupPaddingCategory(MenuCategory category)
+        private void SetupHUDSettings(MenuCategory category)
         {
-            MenuCategory paddingCategory = category.CreateSubCategory("Padding", Color.white);
-
-            MenuCategory leftRegionCat = paddingCategory.CreateSubCategory("Left Padding", Color.white);
-            MenuCategory rightRegionCat = paddingCategory.CreateSubCategory("Right Padding", Color.white);
-            MenuCategory topRegionCat = paddingCategory.CreateSubCategory("Top Padding", Color.white);
-            MenuCategory bottomRegionCat = paddingCategory.CreateSubCategory("Bottom Padding", Color.white);
-
-            leftRegionCat.CreateFloatElement("X", Color.white, 0f, null, 0.25f, float.NegativeInfinity, float.PositiveInfinity, true);
-            leftRegionCat.CreateFloatElement("Y", Color.white, 0f, null, 0.25f, float.NegativeInfinity, float.PositiveInfinity, true);
-            leftRegionCat.CreateFloatElement("Z", Color.white, 0f, null, 0.25f, float.NegativeInfinity, float.PositiveInfinity, true);
-
-            rightRegionCat.CreateFloatElement("X", Color.white, 0f, null, 0.25f, float.NegativeInfinity, float.PositiveInfinity, true);
-            rightRegionCat.CreateFloatElement("Y", Color.white, 0f, null, 0.25f, float.NegativeInfinity, float.PositiveInfinity, true);
-            rightRegionCat.CreateFloatElement("Z", Color.white, 0f, null, 0.25f, float.NegativeInfinity, float.PositiveInfinity, true);
-
-            topRegionCat.CreateFloatElement("X", Color.white, 0f, null, 0.25f, float.NegativeInfinity, float.PositiveInfinity, true);
-            topRegionCat.CreateFloatElement("Y", Color.white, 0f, null, 0.25f, float.NegativeInfinity, float.PositiveInfinity, true);
-            topRegionCat.CreateFloatElement("Z", Color.white, 0f, null, 0.25f, float.NegativeInfinity, float.PositiveInfinity, true);
-
-            bottomRegionCat.CreateFloatElement("X", Color.white, 0f, null, 0.25f, float.NegativeInfinity, float.PositiveInfinity, true);
-            bottomRegionCat.CreateFloatElement("Y", Color.white, 0f, null, 0.25f, float.NegativeInfinity, float.PositiveInfinity, true);
-            bottomRegionCat.CreateFloatElement("Z", Color.white, 0f, null, 0.25f, float.NegativeInfinity, float.PositiveInfinity, true);
-
-            paddingCategory.CreateFunctionElement("Save Settings", Color.green, null);
-        }
-
-        private void SetupSizeCategory(MenuCategory category)
-        {
-            MenuCategory sizeCategory = category.CreateSubCategory("Size", Color.white);
-
-            sizeCategory.CreateFloatElement("Left Scale", Color.white, 1f, null);
-            sizeCategory.CreateFloatElement("Right Scale", Color.white, 1f, null);
-            sizeCategory.CreateFloatElement("Top Scale", Color.white, 1f, null);
-            sizeCategory.CreateFloatElement("Bottom Scale", Color.white, 1f, null);
-            sizeCategory.CreateFloatElement("HUD Scale", Color.white, 1f, null);
-            sizeCategory.CreateFloatElement("Follow Distance", Color.white, 1f, null);
-            sizeCategory.CreateFloatElement("Follow Lerp", Color.white, 1f, null);
-
-            sizeCategory.CreateFunctionElement("Save Settings", Color.green, null);
+            category.CreateFloatElement("Follow Distance", Color.white, 1f, (newValue) => uiObject.GetComponent<UI.UIManager>().hudSettings.followDistance = newValue);
+            category.CreateFloatElement("Follow Lerp", Color.white, 1f, (newValue) => uiObject.GetComponent<UI.UIManager>().hudSettings.followLerp = newValue);
         }
 
         private void SpawnHUD(GameObject hudObject)
         {
-            if(hudObject == null)
+            if (hudObject == null)
             {
                 return;
             }
 
-            if(uiObject == null)
-            {
-                uiObject = GameObject.Instantiate(hudObject);
-                uiObject.AddComponent<UI.UIManager>();
-                lastUI = uiObject.name;
-            }
-            else
-            {
-                GameObject.Destroy(uiObject);
+            GameObject.Destroy(uiObject);
+            
+            uiObject = GameObject.Instantiate(hudObject);
 
-                uiObject = GameObject.Instantiate(hudObject);
+            if (!uiObject.GetComponent<UI.UIManager>())
+            {
                 uiObject.AddComponent<UI.UIManager>();
-                lastUI = uiObject.name;
             }
+
+            lastUI = uiObject.name;
         }
 
         private void SpawnHUD(string hudName)

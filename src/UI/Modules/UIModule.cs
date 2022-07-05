@@ -3,14 +3,13 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-using NEP.Scoreworks.Core;
-
 namespace NEP.Scoreworks.UI.Modules
 {
     [MelonLoader.RegisterTypeInIl2Cpp]
     public class UIModule : MonoBehaviour
     {
         public UIModule(System.IntPtr ptr) : base(ptr) { }
+        public Core.Data.SWValue refValue;
 
         public UIModuleType moduleType;
 
@@ -145,6 +144,11 @@ namespace NEP.Scoreworks.UI.Modules
             t_internal_delay = 0f;
         }
 
+        private void OnDisable()
+        {
+            refValue = null;
+        }
+
         private void Update()
         {
             if (useDuration)
@@ -180,6 +184,7 @@ namespace NEP.Scoreworks.UI.Modules
         public void SetDuration(float duration)
         {
             maxDuration = duration;
+            _duration = 0f;
         }
 
         public void SetText(Text text, string value)

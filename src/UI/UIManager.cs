@@ -3,12 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 
 using UnityEngine;
-using UnityEngine.UI;
 
 using NEP.Scoreworks.Core;
+using NEP.Scoreworks.Core.Data;
 using NEP.Scoreworks.UI.Modules;
-
-using ModThatIsNotMod;
 
 using Newtonsoft.Json.Linq;
 
@@ -21,8 +19,7 @@ namespace NEP.Scoreworks.UI
 
         public static UIManager instance;
 
-        public UIPadding paddingSettings;
-        public UIScale scaleSettings;
+        public UISettings hudSettings;
 
         public UIModule scoreModule;
         public UIModule multiplierModule;
@@ -40,39 +37,49 @@ namespace NEP.Scoreworks.UI
         public UIRegion bottomRegion;
 
         public Transform followTarget = null;
+        public float followDistance = 2f;
+        public float followLerp = 6f;
 
         public bool useHead = true;
 
-        private Transform playerHead = Player.GetPlayerHead().transform;
-        private Transform playerTorso;
+        public static Dictionary<SWScoreType, UIModule> scoreDictionary { get; private set; }
+        public static Dictionary<SWMultiplierType, UIModule> multDictionary { get; private set; }
 
         private void Start()
         {
-            StressLevelZero.Rig.RigManager rigManager = Player.GetRigManager().GetComponent<StressLevelZero.Rig.RigManager>();
-            playerTorso = rigManager.physicsRig.m_chest;
+            scoreDictionary = new Dictionary<SWScoreType, UIModule>();
+            multDictionary = new Dictionary<SWMultiplierType, UIModule>();
 
             rootCanvas = transform.GetChild(0);
 
             InitializeRegions();
 
+            UpdateHighScoreModule(null);
+
             // HUD settings
             ReadHUDSettings();
 
-            // Update all texts for when the player changes HUDs
-            UpdateModulesOnLoad();
+            // Follow distance and target
+            followTarget = ModThatIsNotMod.Player.GetPlayerHead().transform;
+            followDistance = 3f;
+            followLerp = 6f;
         }
 
         private void OnEnable()
         {
             API.OnScoreAdded += UpdateScoreModules;
             API.OnScoreAdded += UpdateScoreSubmodules;
+            API.OnScoreDuplicated += UpdateScoreSubmoduleDuplicates;
             API.OnHighScoreReached += UpdateHighScoreModule;
 
             API.OnMultiplierAdded += UpdateMultiplierModules;
             API.OnMultiplierAdded += UpdateMultiplierSubmodules;
+            API.OnMultiplierDuplicated += UpdateMultiplierSubmoduleDuplicates;
 
+            API.OnScoreRemoved += DisableScoreSubmodule;
             API.OnMultiplierRemoved += UpdateMultiplierModules;
             API.OnMultiplierRemoved += UpdateMultiplierSubmodules;
+            API.OnMultiplierRemoved += DisableMultiplierSubmodule;
 
             API.OnMultiplierChanged += UpdateMultiplierModules;
         }
@@ -81,13 +88,17 @@ namespace NEP.Scoreworks.UI
         {
             API.OnScoreAdded -= UpdateScoreModules;
             API.OnScoreAdded -= UpdateScoreSubmodules;
+            API.OnScoreDuplicated -= UpdateScoreSubmoduleDuplicates;
             API.OnHighScoreReached -= UpdateHighScoreModule;
 
             API.OnMultiplierAdded -= UpdateMultiplierModules;
             API.OnMultiplierAdded -= UpdateMultiplierSubmodules;
+            API.OnMultiplierDuplicated -= UpdateMultiplierSubmoduleDuplicates;
 
+            API.OnScoreRemoved -= DisableScoreSubmodule;
             API.OnMultiplierRemoved -= UpdateMultiplierModules;
             API.OnMultiplierRemoved -= UpdateMultiplierSubmodules;
+            API.OnMultiplierRemoved -= DisableMultiplierSubmodule;
 
             API.OnMultiplierChanged -= UpdateMultiplierModules;
         }
@@ -124,8 +135,6 @@ namespace NEP.Scoreworks.UI
                 {
                     UIModule module = regions[i].modules[k];
 
-                    print(module.name);
-
                     if (module.moduleType == UIModuleType.Module_Score)
                     {
                         scoreModule = module;
@@ -146,13 +155,12 @@ namespace NEP.Scoreworks.UI
 
         private void ReadHUDSettings()
         {
-            paddingSettings = Core.Data.DataManager.ReadPadding();
-            scaleSettings = Core.Data.DataManager.ReadScale();
+            hudSettings = DataManager.ReadHUDSettings();
         }
 
-        private void UpdateScoreModules(Core.Data.SWValue value)
+        private void UpdateScoreModules(SWValue value)
         {
-            if (value.type == Core.Data.SWValueType.Score)
+            if (value.type == SWValueType.Score)
             {
                 if (scoreModule == null)
                 {
@@ -165,9 +173,9 @@ namespace NEP.Scoreworks.UI
             }
         }
 
-        private void UpdateScoreSubmodules(Core.Data.SWValue value)
+        private void UpdateScoreSubmodules(SWValue value)
         {
-            if (value.type == Core.Data.SWValueType.Score)
+            if (value.type == SWValueType.Score)
             {
                 if (scoreModule == null)
                 {
@@ -179,23 +187,56 @@ namespace NEP.Scoreworks.UI
                     return;
                 }
 
-                UIModule submodule = scoreModule.submodules.FirstOrDefault((current) => !current.gameObject.activeInHierarchy);
+                var submodule = scoreModule.submodules.FirstOrDefault((mod) => !mod.isActiveAndEnabled);
 
-                if (submodule == null)
+                if (!scoreDictionary.ContainsKey(value.scoreType))
+                {
+                    if (submodule != null)
+                    {
+                        submodule.SetText(submodule.nameText, value.name);
+                        submodule.SetText(submodule.valueText, ScoreworksManager.instance.currentMultiplier.ToString());
+                        submodule.SetText(submodule.subValueText, value.name + " | " + value.score);
+                        submodule.SetDuration(value.maxDuration);
+
+                        submodule.gameObject.SetActive(true);
+                        scoreDictionary.Add(value.scoreType, submodule);
+                    }
+                }
+            }
+        }
+
+        private void UpdateScoreSubmoduleDuplicates(SWValue value)
+        {
+            if (value.type == SWValueType.Score)
+            {
+                if (scoreModule == null)
                 {
                     return;
                 }
 
-                submodule.SetText(submodule.nameText, value.name);
-                submodule.SetText(submodule.valueText, ScoreworksManager.instance.currentScore.ToString());
-                submodule.SetText(submodule.subValueText, value.name + " | " + value.score);
-                submodule.SetDuration(value.maxDuration);
+                if (scoreModule.submodules == null || scoreModule.submodules.Count <= 0)
+                {
+                    return;
+                }
 
-                submodule.gameObject.SetActive(true);
+                var submodule = scoreDictionary[value.scoreType];
+
+                if (submodule != null)
+                {
+                    submodule.SetText(submodule.nameText, value.name);
+                    submodule.SetText(submodule.valueText, ScoreworksManager.instance.currentMultiplier.ToString());
+                    submodule.SetText(submodule.subValueText, value.name + " | " + value.score);
+                    submodule.SetDuration(value.maxDuration);
+                }
             }
         }
 
-        private void UpdateMultiplierModules(Core.Data.SWValue value)
+        private void DisableScoreSubmodule(SWValue value)
+        {
+            scoreDictionary.Remove(value.scoreType);
+        }
+
+        private void UpdateMultiplierModules(SWValue value)
         {
             if (value.type == Core.Data.SWValueType.Multiplier)
             {
@@ -211,38 +252,72 @@ namespace NEP.Scoreworks.UI
             }
         }
 
-        private void UpdateMultiplierSubmodules(Core.Data.SWValue value)
+        private void UpdateMultiplierSubmodules(SWValue value)
         {
-            if (value.type == Core.Data.SWValueType.Multiplier)
+            if (value.type == SWValueType.Multiplier)
             {
                 if (multiplierModule == null)
                 {
                     return;
                 }
 
-                UIModule submodule = multiplierModule.submodules.FirstOrDefault((current) => !current.gameObject.activeInHierarchy);
-
-                if (submodule == null)
+                if (multiplierModule.submodules == null || multiplierModule.submodules.Count <= 0)
                 {
                     return;
                 }
 
-                submodule.SetText(submodule.nameText, value.name);
-                submodule.SetText(submodule.valueText, ScoreworksManager.instance.currentMultiplier.ToString());
-                submodule.SetText(submodule.subValueText, value.name + " " + value.multiplier + "x");
-                submodule.SetSlider(value.maxDuration);
-                submodule.SetDuration(value.maxDuration);
+                var submodule = multiplierModule.submodules.FirstOrDefault((mod) => !mod.isActiveAndEnabled);
 
-                if (value.cleaned)
+                if (!multDictionary.ContainsKey(value.multiplierType))
                 {
-                    return;
-                }
+                    if (submodule != null)
+                    {
+                        submodule.SetText(submodule.nameText, value.name);
+                        submodule.SetText(submodule.valueText, ScoreworksManager.instance.currentMultiplier.ToString());
+                        submodule.SetText(submodule.subValueText, value.name + " " + value.multiplier.ToString());
+                        submodule.SetSlider(value.maxDuration);
+                        submodule.SetDuration(value.maxDuration);
 
-                submodule.gameObject.SetActive(true);
+                        submodule.gameObject.SetActive(true);
+                        multDictionary.Add(value.multiplierType, submodule);
+                    }
+                }
             }
         }
 
-        private void UpdateHighScoreModule(string currentScene, int newScore)
+        private void UpdateMultiplierSubmoduleDuplicates(SWValue value)
+        {
+            if (value.type == SWValueType.Multiplier)
+            {
+                if (multiplierModule == null)
+                {
+                    return;
+                }
+
+                if (multiplierModule.submodules == null || multiplierModule.submodules.Count <= 0)
+                {
+                    return;
+                }
+
+                var submodule = multDictionary[value.multiplierType];
+
+                if (submodule != null)
+                {
+                    submodule.SetText(submodule.nameText, value.name);
+                    submodule.SetText(submodule.valueText, ScoreworksManager.instance.currentMultiplier.ToString());
+                    submodule.SetText(submodule.subValueText, value.name + " " + value.multiplier.ToString());
+                    submodule.SetSlider(value.maxDuration);
+                    submodule.SetDuration(value.maxDuration);
+                }
+            }
+        }
+
+        private void DisableMultiplierSubmodule(SWValue value)
+        {
+            multDictionary.Remove(value.multiplierType);
+        }
+
+        private void UpdateHighScoreModule(SWValue value)
         {
             if (highScoreModule == null)
             {
@@ -255,71 +330,27 @@ namespace NEP.Scoreworks.UI
             highScoreModule.gameObject.SetActive(true);
         }
 
-        private void UpdateModulesOnLoad()
-        {
-            scoreModule?.SetText(scoreModule.valueText, ScoreworksManager.instance.currentScore.ToString());
-            multiplierModule?.SetText(multiplierModule.valueText, ScoreworksManager.instance.currentMultiplier.ToString());
-            highScoreModule?.SetText(highScoreModule.nameText, ScoreworksManager.instance.currentScene);
-            highScoreModule?.SetText(highScoreModule.valueText, ScoreworksManager.instance.currentHighScore.ToString());
-        }
-
-        private void UpdatePadding()
-        {
-            Transform leftRegionT = this.leftRegion.transform;
-            Transform rightRegionT = this.rightRegion.transform;
-            Transform topRegionT = this.topRegion.transform;
-            Transform bottomRegionT = this.bottomRegion.transform;
-
-            Vector3 paddingLeft = new Vector3(paddingSettings.leftPadding[0], paddingSettings.leftPadding[1], paddingSettings.leftPadding[2]);
-            Vector3 paddingRight = new Vector3(paddingSettings.rightPadding[0], paddingSettings.rightPadding[1], paddingSettings.rightPadding[2]);
-            Vector3 paddingTop = new Vector3(paddingSettings.topPadding[0], paddingSettings.topPadding[1], paddingSettings.topPadding[2]);
-            Vector3 paddingBottom = new Vector3(paddingSettings.bottomPadding[0], paddingSettings.bottomPadding[1], paddingSettings.bottomPadding[2]);
-
-            Vector3 lPadding = -leftRegionT.right + (leftRegionT.InverseTransformDirection(paddingLeft * 100));
-            Vector3 rPadding = rightRegionT.right + (rightRegionT.InverseTransformDirection(paddingRight * 100));
-            Vector3 tPadding = topRegionT.up + (topRegionT.InverseTransformDirection(paddingTop * 100));
-            Vector3 bPadding = -bottomRegionT.up + (bottomRegionT.InverseTransformDirection(paddingBottom * 100));
-
-            leftRegion.transform.localPosition = leftRegionT.InverseTransformDirection(lPadding);
-            rightRegion.transform.localPosition = rightRegionT.InverseTransformDirection(rPadding);
-            topRegion.transform.localPosition = topRegionT.InverseTransformDirection(tPadding);
-            bottomRegion.transform.localPosition = bottomRegionT.InverseTransformDirection(bPadding);
-        }
-
-        private void UpdateRegionScale()
-        {
-            Transform leftRegion = this.leftRegion.transform;
-            Transform rightRegion = this.rightRegion.transform;
-            Transform topRegion = this.topRegion.transform;
-            Transform bottomRegion = this.bottomRegion.transform;
-
-            leftRegion.localScale = Vector3.one * scaleSettings.leftScale / 10f;
-            rightRegion.localScale = Vector3.one * scaleSettings.rightScale / 10f;
-            topRegion.localScale = Vector3.one * scaleSettings.topScale / 10f;
-            bottomRegion.localScale = Vector3.one * scaleSettings.bottomScale / 10f;
-            rootCanvas.localScale = new Vector3(-scaleSettings.hudSize / 100f, scaleSettings.hudSize / 100f, scaleSettings.hudSize / 100f);
-        }
-
-        public void Update()
-        {
-            UpdatePadding();
-            UpdateRegionScale();
-            
-            followTarget = useHead ? playerHead : playerTorso;
-        }
-
-        public void FixedUpdate()
+        private void FixedUpdate()
         {
             if (followTarget == null)
             {
                 return;
             }
 
-            Vector3 move = Vector3.Lerp(transform.position, followTarget.position + followTarget.forward * scaleSettings.followDistance, scaleSettings.followLerp * Time.fixedDeltaTime);
-            Quaternion lookRot = Quaternion.LookRotation(-followTarget.forward);
+            Vector3 move = Vector3.Lerp(transform.position, followTarget.position + followTarget.forward * hudSettings.followDistance, hudSettings.followLerp * Time.deltaTime);
+            Quaternion lookRot = Quaternion.LookRotation(followTarget.forward);
 
             transform.position = move;
-            rootCanvas.rotation = lookRot;
+            transform.rotation = lookRot;
+
+            for (int i = 0; i < transform.childCount; i++)
+            {
+                if (transform.GetChild(i) != null)
+                {
+                    transform.GetChild(i).LookAt(followTarget);
+                }
+            }
         }
     }
 }
+

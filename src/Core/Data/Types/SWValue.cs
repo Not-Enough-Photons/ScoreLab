@@ -8,14 +8,16 @@
             var dictionary = DataManager.scoreValues;
             SWValueTemplate valueTemplate = dictionary[scoreType];
 
-            this.name = valueTemplate.name;
-            this.score = valueTemplate.score;
-            this.type = SWValueType.Score;
-            this.stack = valueTemplate.stack;
+            this.scoreType = scoreType;
 
-            this.maxDuration = 5f;
+            name = valueTemplate.name;
+            score = valueTemplate.score;
+            type = SWValueType.Score;
+            stack = valueTemplate.stack;
 
-            AddToList(this);
+            duration = maxDuration;
+
+            CreateScore(this);
         }
 
         public SWValue(SWMultiplierType multiplierType)
@@ -23,88 +25,92 @@
             var dictionary = DataManager.multiplierValues;
             SWValueTemplate valueTemplate = dictionary[multiplierType];
 
-            this.name = valueTemplate.name;
-            this.score = valueTemplate.score;
-            this.multiplier = valueTemplate.multiplier;
-            this.maxDuration = valueTemplate.maxDuration;
-            this.type = SWValueType.Multiplier;
-            this.stack = valueTemplate.stack;
+            this.multiplierType = multiplierType;
 
-            AddToList(this);
-        }
+            name = valueTemplate.name;
+            score = valueTemplate.score;
+            multiplier = valueTemplate.multiplier;
+            maxDuration = valueTemplate.maxDuration;
+            duration = maxDuration;
+            type = SWValueType.Multiplier;
+            stack = valueTemplate.stack;
 
-        public SWValue(string name, int score)
-        {
-            this.name = name;
-            this.score = score;
-            this.type = SWValueType.Score;
-            this.maxDuration = 5f;
-
-            AddToList(this);
-        }
-
-        public SWValue(string name, float multiplier, float duration)
-        {
-            this.name = name;
-            this.multiplier = multiplier;
-            this.type = SWValueType.Multiplier;
-            this.maxDuration = duration;
-
-            AddToList(this);
+            CreateMultiplier(this);
         }
 
         public string name;
         public int score;
         public float multiplier;
-        public bool stack = false;
+        public bool stack;
+
+        public SWScoreType scoreType;
+        public SWMultiplierType multiplierType;
 
         public bool cleaned = false;
 
         public SWValueType type;
 
-        public float maxDuration;
-        private float _duration;
+        public float maxDuration = 5f;
+        public float duration;
 
-        public static void AddToList(SWValue value)
+        public void CreateScore(SWValue value)
         {
-            ScoreworksManager.swValues.Add(value);
-
-            ScoreworksManager.instance.AddValues(value);
-
             if (value.type == SWValueType.Score)
             {
+                API.OnScorePreAdded?.Invoke(value);
                 API.OnScoreAdded?.Invoke(value);
             }
+        }
 
-            if (value.type == SWValueType.Multiplier)
-            {
-                API.OnMultiplierAdded?.Invoke(value);
-            }
-        } 
-
-        public static void RemoveFromList(SWValue value)
+        public void DestroyScore(SWValue value)
         {
-            ScoreworksManager.swValues.Remove(value);
-
-            if (value.type == SWValueType.Multiplier)
-            {
-                API.OnMultiplierRemoved?.Invoke(value);
-            }
-
             if (value.type == SWValueType.Score)
             {
+                API.OnScorePreRemoved?.Invoke(value);
                 API.OnScoreRemoved?.Invoke(value);
+            }
+        }
+
+        public void CreateMultiplier(SWValue value)
+        {
+            if (value.type == SWValueType.Multiplier)
+            {
+                API.OnMultiplierPreAdded?.Invoke(value);
+                API.OnMultiplierAdded?.Invoke(value);
+                API.OnMultiplierChanged?.Invoke(value);
+            }
+        }
+
+        public void DestroyMultiplier(SWValue value)
+        {
+            if (value.type == SWValueType.Multiplier)
+            {
+                API.OnMultiplierPreRemoved?.Invoke(value);
+                API.OnMultiplierRemoved?.Invoke(value);
+                API.OnMultiplierChanged?.Invoke(value);
             }
         }
 
         public void Update()
         {
-            _duration += UnityEngine.Time.deltaTime;
+            duration -= UnityEngine.Time.deltaTime;
 
-            if(_duration >= maxDuration)
+            if (duration <= 0f)
             {
-                RemoveFromList(this);
+                if (type == SWValueType.Score)
+                {
+                    DestroyScore(this);
+                }
+                else if (type == SWValueType.Multiplier)
+                {
+                    DestroyMultiplier(this);
+                }
             }
+        }
+
+        public void ResetDuration()
+        {
+            duration = maxDuration;
         }
     }
 }

@@ -21,6 +21,7 @@ namespace NEP.Scoreworks.Core
                 public static void Postfix()
                 {
                     new Data.SWValue(Data.SWScoreType.SW_SCORE_KILL);
+                    new Data.SWValue(Data.SWMultiplierType.SW_MULTIPLIER_KILL);
                 }
             }
 
@@ -45,23 +46,26 @@ namespace NEP.Scoreworks.Core
             {
                 public static void Postfix(Zombie_GameControl __instance)
                 {
-                    switch (__instance.difficulty)
+                    if(__instance.currWaveIndex > 1)
                     {
-                        case Zombie_GameControl.Difficulty.EASY:
-                            new Data.SWValue(Data.SWScoreType.SW_SCORE_ROUND_EASY);
-                            break;
-                        case Zombie_GameControl.Difficulty.MEDIUM:
-                            new Data.SWValue(Data.SWScoreType.SW_SCORE_ROUND_MEDIUM);
-                            break;
-                        case Zombie_GameControl.Difficulty.HARD:
-                            new Data.SWValue(Data.SWScoreType.SW_SCORE_ROUND_HARD);
-                            break;
-                        case Zombie_GameControl.Difficulty.HARDER:
-                            new Data.SWValue(Data.SWScoreType.SW_SCORE_ROUND_HARDER);
-                            break;
-                        case Zombie_GameControl.Difficulty.HARDEST:
-                            new Data.SWValue(Data.SWScoreType.SW_SCORE_ROUND_HARDEST);
-                            break;
+                        switch (__instance.difficulty)
+                        {
+                            case Zombie_GameControl.Difficulty.EASY:
+                                new Data.SWValue(Data.SWScoreType.SW_SCORE_ROUND_EASY);
+                                break;
+                            case Zombie_GameControl.Difficulty.MEDIUM:
+                                new Data.SWValue(Data.SWScoreType.SW_SCORE_ROUND_MEDIUM);
+                                break;
+                            case Zombie_GameControl.Difficulty.HARD:
+                                new Data.SWValue(Data.SWScoreType.SW_SCORE_ROUND_HARD);
+                                break;
+                            case Zombie_GameControl.Difficulty.HARDER:
+                                new Data.SWValue(Data.SWScoreType.SW_SCORE_ROUND_HARDER);
+                                break;
+                            case Zombie_GameControl.Difficulty.HARDEST:
+                                new Data.SWValue(Data.SWScoreType.SW_SCORE_ROUND_HARDEST);
+                                break;
+                        }
                     }
                 }
             }
