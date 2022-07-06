@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 
 using UnityEngine;
@@ -8,7 +7,7 @@ using NEP.Scoreworks.Core;
 using NEP.Scoreworks.Core.Data;
 using NEP.Scoreworks.UI.Modules;
 
-using Newtonsoft.Json.Linq;
+using StressLevelZero.Rig;
 
 namespace NEP.Scoreworks.UI
 {
@@ -60,7 +59,9 @@ namespace NEP.Scoreworks.UI
             ReadHUDSettings();
 
             // Follow distance and target
-            followTarget = ModThatIsNotMod.Player.GetPlayerHead().transform;
+            RigManager rigManager = ModThatIsNotMod.Player.GetRigManager().GetComponent<RigManager>();
+
+            followTarget = rigManager.physicsRig.m_chest;
             followDistance = 3f;
             followLerp = 6f;
         }
@@ -337,7 +338,7 @@ namespace NEP.Scoreworks.UI
                 return;
             }
 
-            Vector3 move = Vector3.Lerp(transform.position, followTarget.position + followTarget.forward * hudSettings.followDistance, hudSettings.followLerp * Time.deltaTime);
+            Vector3 move = Vector3.Lerp(transform.position, followTarget.position + -followTarget.up * hudSettings.followDistance, hudSettings.followLerp * Time.deltaTime);
             Quaternion lookRot = Quaternion.LookRotation(followTarget.forward);
 
             transform.position = move;

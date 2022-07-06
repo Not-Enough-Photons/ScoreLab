@@ -53,7 +53,8 @@
     <Compile Include="src\UI\UIPadding.cs" />
     <Compile Include="src\UI\UIRegion.cs" />
     <Compile Include="src\UI\UISettings.cs" />
-    <Compile Include="src\Utilities\Utilities.cs" />
+    <Compile Include="src\Utilities\CurrentLevel.cs" />
+    <Compile Include="src\Utilities\Utils.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="0Harmony, Version=2.9.0.0, Culture=neutral, processorArchitecture=MSIL">

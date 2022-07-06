@@ -41,7 +41,7 @@ namespace NEP.Scoreworks
         {
             instance = this;
 
-            Utilities.Utilities.InitializeMelonPrefs();
+            Utilities.Utils.InitializeMelonPrefs();
 
             bundleFiles = System.IO.Directory.GetFiles(MelonUtils.UserDataDirectory + "/Scoreworks/HUDs/");
             bundles = new AssetBundle[bundleFiles.Length];
@@ -57,7 +57,7 @@ namespace NEP.Scoreworks
                 customUIs[i].hideFlags = HideFlags.DontUnloadUnusedAsset;
             }
 
-            lastUI = Utilities.Utilities.GetHUDFromPref();
+            lastUI = Utilities.Utils.GetHUDFromPref();
 
             SetupBonemenu();
 
@@ -65,18 +65,19 @@ namespace NEP.Scoreworks
             DataManager.Initialize();
         }
 
+        public override void OnApplicationQuit()
+        {
+            DataManager.SaveHighScore(Core.ScoreworksManager.instance.currentSceneLiteral, Core.ScoreworksManager.instance.currentHighScore);
+        }
+
         public override void OnSceneWasLoaded(int buildIndex, string sceneName)
         {
+            Core.ScoreworksManager.instance.currentSceneLiteral = sceneName;
+            Core.ScoreworksManager.instance.currentScene = Utils.GetLevelFromSceneName(sceneName);
+
             if (DataManager.highScoreTable.ContainsKey(sceneName))
             {
-                SWHighScore highScore = new SWHighScore()
-                {
-                    currentScene = DataManager.highScoreTable[sceneName].currentScene,
-                    highScore = DataManager.highScoreTable[sceneName].highScore
-                };
-
-                Core.ScoreworksManager.instance.currentScene = highScore.currentScene;
-                Core.ScoreworksManager.instance.currentHighScore = highScore.highScore;
+                Core.ScoreworksManager.instance.currentHighScore = DataManager.highScoreTable[sceneName].highScore;
             }
 
             Core.ScoreworksManager.instance.currentScore = 0;
@@ -93,13 +94,7 @@ namespace NEP.Scoreworks
                 return;
             }
 
-            SWHighScore highScore = new SWHighScore()
-            {
-                currentScene = sceneName,
-                highScore = Core.ScoreworksManager.instance.currentScore
-            };
-
-            DataManager.SaveHighScore(highScore);
+            DataManager.SaveHighScore(Core.ScoreworksManager.instance.currentSceneLiteral, Core.ScoreworksManager.instance.currentScore);
         }
 
         public override void OnUpdate() => Core.ScoreworksManager.instance?.Update();
@@ -109,7 +104,9 @@ namespace NEP.Scoreworks
             MenuCategory mainCategory = MenuManager.CreateCategory("Scoreworks Settings", Color.white);
             MenuCategory hudCategory = mainCategory.CreateSubCategory("HUDs", Color.blue);
             MenuCategory hudSettingsCategory = mainCategory.CreateSubCategory("HUD Settings", Color.white);
+            MenuCategory highScoreCategory = mainCategory.CreateSubCategory("High Score Settings", Color.white);
             SetupHUDSettings(hudSettingsCategory);
+            SetupHighScoreSettings(highScoreCategory);
 
             foreach(GameObject uiObject in customUIs)
             {
@@ -121,6 +118,13 @@ namespace NEP.Scoreworks
         {
             category.CreateFloatElement("Follow Distance", Color.white, 1f, (newValue) => uiObject.GetComponent<UI.UIManager>().hudSettings.followDistance = newValue);
             category.CreateFloatElement("Follow Lerp", Color.white, 1f, (newValue) => uiObject.GetComponent<UI.UIManager>().hudSettings.followLerp = newValue);
+        }
+
+        private void SetupHighScoreSettings(MenuCategory category)
+        {
+            category.CreateFunctionElement("BE VERY CAREFUL WITH THIS", Color.red, null);
+            category.CreateFunctionElement("Delete High Score", Color.red, () => DataManager.DeleteHighScore());
+            category.CreateFunctionElement("Delete All High Scores", Color.red, () => DataManager.DeleteAllHighScores());
         }
 
         private void SpawnHUD(GameObject hudObject)

@@ -25,16 +25,22 @@ namespace NEP.Scoreworks.Core.Data
         }
 
         // High Scores
-        public static void SaveHighScore(SWHighScore score)
+        public static void SaveHighScore(string currentScene, int score)
         {
-            if (highScoreTable.ContainsKey(score.currentScene))
+            if (highScoreTable.ContainsKey(currentScene))
             {
-                highScoreTable[score.currentScene].currentScene = ScoreworksManager.instance.currentScene;
-                highScoreTable[score.currentScene].highScore = ScoreworksManager.instance.currentHighScore;
+                highScoreTable[currentScene].currentScene = ScoreworksManager.instance.currentScene;
+                highScoreTable[currentScene].highScore = ScoreworksManager.instance.currentHighScore;
             }
             else
             {
-                highScoreTable.Add(score.currentScene, score);
+                SWHighScore highScore = new SWHighScore()
+                {
+                    currentScene = currentScene,
+                    highScore = score
+                };
+
+                highScoreTable.Add(currentScene, highScore);
             }
 
             string serialized = JsonConvert.SerializeObject(highScoreTable, Formatting.Indented);
@@ -51,6 +57,36 @@ namespace NEP.Scoreworks.Core.Data
         {
             string data = System.IO.File.ReadAllText(path);
             highScoreTable = JsonConvert.DeserializeObject<Dictionary<string, SWHighScore>>(data);
+        }
+
+        public static void DeleteHighScore()
+        {
+            // Already empty
+            if(highScoreTable.Count <= 0)
+            {
+                return;
+            }
+
+            var manager = ScoreworksManager.instance;
+
+            highScoreTable.Remove(manager.currentSceneLiteral);
+
+            // Clear high score from the manager
+
+            manager.currentHighScore = 0;
+
+            // Save the data to the file
+
+            SaveHighScore(manager.currentScene, 0);
+        }
+
+        public static void DeleteAllHighScores()
+        {
+            highScoreTable.Clear();
+
+            string serialized = JsonConvert.SerializeObject(highScoreTable, Formatting.Indented);
+
+            System.IO.File.WriteAllText(MelonLoader.MelonUtils.UserDataDirectory + "/Scoreworks/sw_highscores.json", serialized);
         }
 
         public static void BuildScoreValues()

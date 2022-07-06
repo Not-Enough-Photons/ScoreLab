@@ -28,6 +28,7 @@ namespace NEP.Scoreworks.Core
         public float currentMultiplier;
 
         public string currentScene;
+        public string currentSceneLiteral;
         public int currentHighScore;
 
         public List<Data.SWValue> scoreValues { get; private set; }
@@ -46,7 +47,6 @@ namespace NEP.Scoreworks.Core
 
         private void Start()
         {
-            currentScene = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
             currentMultiplier = 1f;
 
             SubscribeActions();
