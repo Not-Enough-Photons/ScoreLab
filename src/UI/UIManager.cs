@@ -44,6 +44,9 @@ namespace NEP.Scoreworks.UI
         public static Dictionary<SWScoreType, UIModule> scoreDictionary { get; private set; }
         public static Dictionary<SWMultiplierType, UIModule> multDictionary { get; private set; }
 
+        private Transform chest;
+        private Transform head;
+
         private void Start()
         {
             scoreDictionary = new Dictionary<SWScoreType, UIModule>();
@@ -60,6 +63,8 @@ namespace NEP.Scoreworks.UI
 
             // Follow distance and target
             RigManager rigManager = ModThatIsNotMod.Player.GetRigManager().GetComponent<RigManager>();
+            chest = rigManager.physicsRig.m_chest;
+            head = ModThatIsNotMod.Player.GetPlayerHead().transform; 
 
             followTarget = rigManager.physicsRig.m_chest;
             followDistance = 3f;
@@ -338,7 +343,10 @@ namespace NEP.Scoreworks.UI
                 return;
             }
 
-            Vector3 move = Vector3.Lerp(transform.position, followTarget.position + -followTarget.up * hudSettings.followDistance, hudSettings.followLerp * Time.deltaTime);
+            Vector3 targetAxis = useHead ? followTarget.forward : -followTarget.up;
+            followTarget = useHead ? head : chest;
+
+            Vector3 move = Vector3.Lerp(transform.position, followTarget.position + targetAxis * hudSettings.followDistance, hudSettings.followLerp * Time.deltaTime);
             Quaternion lookRot = Quaternion.LookRotation(followTarget.forward);
 
             transform.position = move;

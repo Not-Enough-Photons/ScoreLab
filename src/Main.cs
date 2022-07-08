@@ -57,7 +57,7 @@ namespace NEP.Scoreworks
                 customUIs[i].hideFlags = HideFlags.DontUnloadUnusedAsset;
             }
 
-            lastUI = Utilities.Utils.GetHUDFromPref();
+            lastUI = Utils.GetHUDFromPref();
 
             SetupBonemenu();
 
@@ -85,6 +85,8 @@ namespace NEP.Scoreworks
 
             new Core.Director();
             new Audio.AudioManager();
+
+            SpawnHUD(lastUI);
         }
 
         public override void OnSceneWasUnloaded(int buildIndex, string sceneName)
@@ -116,8 +118,9 @@ namespace NEP.Scoreworks
 
         private void SetupHUDSettings(MenuCategory category)
         {
-            category.CreateFloatElement("Follow Distance", Color.white, 1f, (newValue) => uiObject.GetComponent<UI.UIManager>().hudSettings.followDistance = newValue);
-            category.CreateFloatElement("Follow Lerp", Color.white, 1f, (newValue) => uiObject.GetComponent<UI.UIManager>().hudSettings.followLerp = newValue);
+            category.CreateFloatElement("Follow Distance", Color.white, 1f, (newValue) => uiObject.GetComponent<UI.UIManager>().hudSettings.followDistance = newValue, 1f, 0f, float.PositiveInfinity, true);
+            category.CreateFloatElement("Follow Lerp", Color.white, 1f, (newValue) => uiObject.GetComponent<UI.UIManager>().hudSettings.followLerp = newValue, 1f, 0f, float.PositiveInfinity, true);
+            category.CreateBoolElement("Follow Head", Color.white, true, (newValue) => uiObject.GetComponent<UI.UIManager>().useHead = newValue);
         }
 
         private void SetupHighScoreSettings(MenuCategory category)

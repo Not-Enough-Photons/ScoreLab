@@ -63,6 +63,16 @@ namespace NEP.Scoreworks.Core
                 }
             }
 
+            [HarmonyLib.HarmonyPatch(typeof(Player_Health))]
+            [HarmonyLib.HarmonyPatch(nameof(Player_Health.LifeSavingDamgeDealt))]
+            public static class Patch_SecondWind
+            {
+                public static void Postfix()
+                {
+                    new Data.SWValue(Data.SWMultiplierType.SW_MULTIPLIER_SECOND_WIND);
+                }
+            }
+
             [HarmonyLib.HarmonyPatch(typeof(Projectile))]
             [HarmonyLib.HarmonyPatch(nameof(Projectile.Awake))]
             public static class Patch_ProjectileCollision
@@ -71,7 +81,7 @@ namespace NEP.Scoreworks.Core
                 {
                     var action = new System.Action<Collider, Vector3, Vector3>((collider, world, normal) =>
                     {
-                        BehaviourBaseNav baseNav = collider.GetComponentInParent<BehaviourBaseNav>();
+                        BehaviourBaseNav baseNav = collider.transform.root.GetComponentInParent<BehaviourBaseNav>();
 
                         if(baseNav == null)
                         {
