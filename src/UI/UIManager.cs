@@ -2,6 +2,7 @@
 using System.Linq;
 
 using UnityEngine;
+using UnityEngine.UI;
 
 using NEP.Scoreworks.Core;
 using NEP.Scoreworks.Core.Data;
@@ -54,9 +55,7 @@ namespace NEP.Scoreworks.UI
 
             InitializeRegions();
 
-            UpdateScoreModules(null);
-            UpdateMultiplierModules(null);
-            UpdateHighScoreModule(null);
+            InitializeTexts();
 
             // HUD settings
             ReadHUDSettings();
@@ -164,6 +163,48 @@ namespace NEP.Scoreworks.UI
             hudSettings = DataManager.ReadHUDSettings();
         }
 
+        private void InitializeTexts()
+        {
+            if (scoreModule != null)
+            {
+                if (scoreModule.valueText)
+                {
+                    scoreModule.SetValueText(DataManager.OutputDisplayTextFromRegex(scoreModule.valueText.text));
+                }
+
+                if (scoreModule.subValueText)
+                {
+                    scoreModule.SetSubValueText(DataManager.OutputDisplayTextFromRegex(scoreModule.subValueText.text));
+                }
+            }
+
+            if (multiplierModule != null)
+            {
+                if (multiplierModule.valueText)
+                {
+                    multiplierModule.SetValueText(DataManager.OutputDisplayTextFromRegex(multiplierModule.valueText.text));
+                }
+
+                if (multiplierModule.subValueText)
+                {
+                    multiplierModule.SetSubValueText(DataManager.OutputDisplayTextFromRegex(multiplierModule.subValueText.text));
+                }
+            }
+
+            if (highScoreModule != null)
+            {
+                if (highScoreModule.valueText)
+                {
+                    highScoreModule.SetValueText(DataManager.OutputDisplayTextFromRegex(highScoreModule.valueText.text));
+                }
+
+                if (highScoreModule.subValueText)
+                {
+                    highScoreModule.SetSubValueText(DataManager.OutputDisplayTextFromRegex(highScoreModule.subValueText.text));
+                }
+            }
+        }
+
         private void UpdateScoreModules(SWValue value)
         {
             if (value.type == SWValueType.Score)
@@ -173,8 +214,18 @@ namespace NEP.Scoreworks.UI
                     return;
                 }
 
-                scoreModule.SetText(scoreModule.nameText, value.name);
-                scoreModule.SetText(scoreModule.valueText, ScoreworksManager.instance.currentScore.ToString());
+                if (scoreModule.valueText != null)
+                {
+                    scoreModule.SetValueText(scoreModule.initialValueText);
+                    scoreModule.SetValueText(DataManager.OutputDisplayTextFromRegex(scoreModule.valueText.text, value));
+                }
+
+                if (scoreModule.subValueText != null)
+                {
+                    scoreModule.SetSubValueText(scoreModule.initialSubValueText);
+                    scoreModule.SetSubValueText(DataManager.OutputDisplayTextFromRegex(scoreModule.subValueText.text, value));
+                }
+
                 scoreModule.SetDuration(value.maxDuration);
             }
         }
@@ -195,13 +246,25 @@ namespace NEP.Scoreworks.UI
 
                 var submodule = scoreModule.submodules.FirstOrDefault((mod) => !mod.isActiveAndEnabled);
 
+                Text valueText = submodule.valueText;
+                Text subValueText = submodule.subValueText;
+
                 if (!scoreDictionary.ContainsKey(value.scoreType))
                 {
                     if (submodule != null)
                     {
-                        submodule.SetText(submodule.nameText, value.name);
-                        submodule.SetText(submodule.valueText, ScoreworksManager.instance.currentMultiplier.ToString());
-                        submodule.SetText(submodule.subValueText, value.name + " | " + value.score);
+                        if (valueText != null)
+                        {
+                            submodule.SetValueText(submodule.initialValueText);
+                            submodule.SetValueText(DataManager.OutputDisplayTextFromRegex(valueText.text, value));
+                        }
+
+                        if (subValueText != null)
+                        {
+                            submodule.SetSubValueText(submodule.initialSubValueText);
+                            submodule.SetSubValueText(DataManager.OutputDisplayTextFromRegex(subValueText.text, value));
+                        }
+
                         submodule.SetDuration(value.maxDuration);
 
                         submodule.gameObject.SetActive(true);
@@ -229,9 +292,18 @@ namespace NEP.Scoreworks.UI
 
                 if (submodule != null)
                 {
-                    submodule.SetText(submodule.nameText, value.name);
-                    submodule.SetText(submodule.valueText, ScoreworksManager.instance.currentMultiplier.ToString());
-                    submodule.SetText(submodule.subValueText, value.name + " | " + value.score);
+                    if (submodule.valueText != null)
+                    {
+                        submodule.SetValueText(submodule.initialValueText);
+                        submodule.SetValueText(DataManager.OutputDisplayTextFromRegex(submodule.valueText.text, value));
+                    }
+
+                    if (submodule.subValueText != null)
+                    {
+                        submodule.SetSubValueText(submodule.initialSubValueText);
+                        submodule.SetSubValueText(DataManager.OutputDisplayTextFromRegex(submodule.subValueText.text, value));
+                    }
+
                     submodule.SetDuration(value.maxDuration);
                 }
             }
@@ -251,9 +323,19 @@ namespace NEP.Scoreworks.UI
                     return;
                 }
 
-                multiplierModule.SetText(multiplierModule.nameText, value.name);
-                multiplierModule.SetText(multiplierModule.valueText, ScoreworksManager.instance.currentMultiplier.ToString());
-                multiplierModule.SetText(multiplierModule.subValueText, value.multiplier.ToString());
+                if (multiplierModule.valueText != null)
+                {
+                    multiplierModule.SetValueText(multiplierModule.initialValueText);
+                    multiplierModule.SetValueText(DataManager.OutputDisplayTextFromRegex(multiplierModule.valueText.text, value));
+                }
+
+                if (multiplierModule.subValueText != null)
+                {
+                    multiplierModule.SetSubValueText(multiplierModule.initialSubValueText);
+                    multiplierModule.SetSubValueText(DataManager.OutputDisplayTextFromRegex(multiplierModule.subValueText.text, value));
+                }
+
+
                 multiplierModule.SetDuration(value.maxDuration);
             }
         }
@@ -278,9 +360,19 @@ namespace NEP.Scoreworks.UI
                 {
                     if (submodule != null)
                     {
-                        submodule.SetText(submodule.nameText, value.name);
-                        submodule.SetText(submodule.valueText, ScoreworksManager.instance.currentMultiplier.ToString());
-                        submodule.SetText(submodule.subValueText, value.name + " " + value.multiplier.ToString());
+                        if (submodule.valueText != null)
+                        {
+                            submodule.SetValueText(submodule.initialValueText);
+                            submodule.SetValueText(DataManager.OutputDisplayTextFromRegex(submodule.valueText.text, value));
+                        }
+
+                        if (submodule.subValueText != null)
+                        {
+                            submodule.SetSubValueText(submodule.initialSubValueText);
+                            submodule.SetSubValueText(DataManager.OutputDisplayTextFromRegex(submodule.subValueText.text, value));
+                        }
+
+
                         submodule.SetSlider(value.maxDuration);
                         submodule.SetDuration(value.maxDuration);
 
@@ -309,9 +401,18 @@ namespace NEP.Scoreworks.UI
 
                 if (submodule != null)
                 {
-                    submodule.SetText(submodule.nameText, value.name);
-                    submodule.SetText(submodule.valueText, ScoreworksManager.instance.currentMultiplier.ToString());
-                    submodule.SetText(submodule.subValueText, value.name + " " + value.multiplier.ToString());
+                    if (submodule.valueText != null)
+                    {
+                        submodule.SetValueText(submodule.initialValueText);
+                        submodule.SetValueText(DataManager.OutputDisplayTextFromRegex(submodule.valueText.text, value));
+                    }
+
+                    if (submodule.subValueText != null)
+                    {
+                        submodule.SetSubValueText(submodule.initialSubValueText);
+                        submodule.SetSubValueText(DataManager.OutputDisplayTextFromRegex(submodule.subValueText.text, value));
+                    }
+
                     submodule.SetSlider(value.maxDuration);
                     submodule.SetDuration(value.maxDuration);
                 }
@@ -330,8 +431,17 @@ namespace NEP.Scoreworks.UI
                 return;
             }
 
-            highScoreModule.SetText(highScoreModule.nameText, ScoreworksManager.instance.currentScene);
-            highScoreModule.SetText(highScoreModule.valueText, ScoreworksManager.instance.currentHighScore.ToString());
+            if (highScoreModule.valueText != null)
+            {
+                highScoreModule.SetValueText(highScoreModule.initialValueText);
+                highScoreModule.SetValueText(DataManager.OutputDisplayTextFromRegex(highScoreModule.valueText.text, value));
+            }
+
+            if (highScoreModule.subValueText != null)
+            {
+                highScoreModule.SetSubValueText(highScoreModule.initialSubValueText);
+                highScoreModule.SetSubValueText(DataManager.OutputDisplayTextFromRegex(highScoreModule.subValueText.text, value));
+            }
 
             highScoreModule.gameObject.SetActive(true);
         }

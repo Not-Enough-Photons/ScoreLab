@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
+
 using UnityEngine;
 
 using Newtonsoft.Json;
@@ -14,6 +16,8 @@ namespace NEP.Scoreworks.Core.Data
         public static Dictionary<SWMultiplierType, SWValueTemplate> multiplierValues { get; private set; }
 
         public static Dictionary<string, SWHighScore> highScoreTable { get; private set; }
+
+        private static string displayValueRegexPattern = @"\%(name|currentscore|score|highscore|currentmultiplier|multiplier|scenename)%";
 
         public static void Initialize()
         {
@@ -219,6 +223,75 @@ namespace NEP.Scoreworks.Core.Data
             var data = JsonConvert.SerializeObject(manager.hudSettings, Formatting.Indented);
 
             System.IO.File.WriteAllText(MelonLoader.MelonUtils.UserDataDirectory + "/Scoreworks/hud_settings.json", data);
+        }
+
+        public static string OutputDisplayTextFromRegex(string input, SWValue value)
+        {
+            Match match = Regex.Match(input, displayValueRegexPattern);
+
+            switch (match.Value)
+            {
+                case "%name%":
+                    input = input.Replace(match.Value, value.name);
+                    break;
+                case "%currentscore%":
+                    input = input.Replace(match.Value, ScoreworksManager.instance.currentScore.ToString());
+                    break;
+                case "%score%":
+                    input = input.Replace(match.Value, value.score.ToString());
+                    break;
+                case "%highscore":
+                    input = input.Replace(match.Value, ScoreworksManager.instance.currentHighScore.ToString());
+                    break;
+                case "%currentmultiplier":
+                    input = input.Replace(match.Value, ScoreworksManager.instance.currentMultiplier.ToString());
+                    break;
+                case "%multiplier%":
+                    input = input.Replace(match.Value, value.multiplier.ToString());
+                    break;
+                case "%scenename":
+                    input = input.Replace(match.Value, ScoreworksManager.instance.currentScene.ToString());
+                    break;
+            }
+
+            return input;
+        }
+
+        public static string OutputDisplayTextFromRegex(string input, string name = "", int score = 0, float multiplier = 0f)
+        {
+            Match match = Regex.Match(input, displayValueRegexPattern);
+
+            while (match.Success)
+            {
+                switch (match.Value)
+                {
+                    case "%n%":
+                        input = input.Replace(match.Value, name);
+                        break;
+                    case "%cs%":
+                        input = input.Replace(match.Value, ScoreworksManager.instance.currentScore.ToString());
+                        break;
+                    case "%s%":
+                        input = input.Replace(match.Value, score.ToString());
+                        break;
+                    case "%hs%":
+                        input = input.Replace(match.Value, ScoreworksManager.instance.currentHighScore.ToString());
+                        break;
+                    case "%cm%":
+                        input = input.Replace(match.Value, ScoreworksManager.instance.currentMultiplier.ToString());
+                        break;
+                    case "%m%":
+                        input = input.Replace(match.Value, multiplier.ToString());
+                        break;
+                    case "%sn%":
+                        input = input.Replace(match.Value, ScoreworksManager.instance.currentScene.ToString());
+                        break;
+                }
+
+                match = match.NextMatch();
+            }
+
+            return input;
         }
     }
 

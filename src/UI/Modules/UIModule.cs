@@ -26,6 +26,9 @@ namespace NEP.Scoreworks.UI.Modules
         public float maxDuration = 1f;
         private float _duration = 0f;
 
+        public string initialValueText { get; private set; }
+        public string initialSubValueText { get; private set; }
+
         private float internal_delay = 0.25f;
         private float t_internal_delay;
 
@@ -70,11 +73,6 @@ namespace NEP.Scoreworks.UI.Modules
 
                 string name = currentTransform.name;
 
-                if (name == "NameText")
-                {
-                    nameText = currentTransform.GetComponentInChildren<Text>();
-                }
-
                 if (name == "ValueText")
                 {
                     valueText = currentTransform.GetComponentInChildren<Text>();
@@ -85,7 +83,10 @@ namespace NEP.Scoreworks.UI.Modules
                     subValueText = currentTransform.GetComponentInChildren<Text>();
                 }
 
-                slider = currentTransform.GetComponentInChildren<Slider>();
+                if (name == "Slider")
+                {
+                    slider = currentTransform.GetComponentInChildren<Slider>();
+                }
 
                 if (GetComponentInChildren<Animator>() != null)
                 {
@@ -94,6 +95,8 @@ namespace NEP.Scoreworks.UI.Modules
             }
 
             useDuration = false;
+
+            initialValueText = valueText?.text;
         }
 
         private void InitializeSubmodules()
@@ -193,6 +196,26 @@ namespace NEP.Scoreworks.UI.Modules
             {
                 text.text = value;
             }
+        }
+
+        public void SetValueText(string value)
+        {
+            if (valueText == null)
+            {
+                return;
+            }
+
+            valueText.text = value;
+        }
+
+        public void SetSubValueText(string value)
+        {
+            if (subValueText == null)
+            {
+                return;
+            }
+
+            subValueText.text = value;
         }
 
         public void SetSlider(float value)
