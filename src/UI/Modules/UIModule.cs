@@ -168,7 +168,7 @@ namespace NEP.Scoreworks.UI.Modules
                     }
                     else
                     {
-                        anim.Play("FadeOut");
+                        anim.Play("Anim_FadeOut");
 
                         t_internal_delay += Time.deltaTime;
 

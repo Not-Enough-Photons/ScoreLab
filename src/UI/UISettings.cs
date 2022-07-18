@@ -4,5 +4,6 @@
     {
         public float followDistance;
         public float followLerp;
+        public bool followHead;
     }
 }

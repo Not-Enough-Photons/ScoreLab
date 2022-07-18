@@ -203,15 +203,22 @@ namespace NEP.Scoreworks.Core.Data
 
             var hudData = JObject.Parse(file);
 
-            var fileScaleSettings = hudData["settings"];
-
             UI.UISettings hudSettings = new UI.UISettings()
             {
-                followDistance = (float)fileScaleSettings["followDistance"],
-                followLerp = (float)fileScaleSettings["followLerp"],
+                followDistance = (float)hudData["followDistance"],
+                followLerp = (float)hudData["followLerp"],
             };
 
             return hudSettings;
+        }
+
+        public static void SaveHUDSettings()
+        {
+            UI.UIManager manager = GameObject.FindObjectOfType<UI.UIManager>();
+
+            var data = JsonConvert.SerializeObject(manager.hudSettings, Formatting.Indented);
+
+            System.IO.File.WriteAllText(MelonLoader.MelonUtils.UserDataDirectory + "/Scoreworks/hud_settings.json", data);
         }
     }
 

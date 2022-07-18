@@ -8,6 +8,7 @@ using PuppetMasta;
 using StressLevelZero.AI;
 using StressLevelZero.Arena;
 using StressLevelZero.Combat;
+using StressLevelZero.Rig;
 
 namespace NEP.Scoreworks.Core
 {
@@ -36,8 +37,19 @@ namespace NEP.Scoreworks.Core
             {
                 public static void Postfix()
                 {
+                    enemiesKilled++;
+
                     new Data.SWValue(Data.SWScoreType.SW_SCORE_KILL);
-                    new Data.SWValue(Data.SWMultiplierType.SW_MULTIPLIER_KILL);
+
+                    if(enemiesKilled > 1)
+                    {
+                        new Data.SWValue(Data.SWMultiplierType.SW_MULTIPLIER_KILL);
+                    }
+
+                    if (playerInAir)
+                    {
+                        new Data.SWValue(Data.SWScoreType.SW_SCORE_MIDAIR_KILL);
+                    }
                 }
             }
 
@@ -133,6 +145,49 @@ namespace NEP.Scoreworks.Core
                         }
                     }
                 }
+            }
+        }
+
+        public static bool playerInAir;
+        public static int enemiesKilled;
+
+        private RigManager playerRig;
+        private PhysicsRig physicsRig;
+
+        private float t_maxEnemiesKilled;
+        private float t_enemiesKilled;
+
+        private RigManager GetPlayerRig()
+        {
+            return ModThatIsNotMod.Player.GetRigManager().GetComponent<RigManager>();
+        }
+
+        private void Initialize()
+        {
+            playerRig = GetPlayerRig();
+            physicsRig = playerRig.physicsRig;
+        }
+
+        public void Update()
+        {
+            playerInAir = physicsRig.physBody.ungroundedThisFrame;
+
+            EnemiesKilledUpdate();
+        }
+
+        private void EnemiesKilledUpdate()
+        {
+            if(enemiesKilled < 1)
+            {
+                return;
+            }
+
+            t_enemiesKilled += Time.deltaTime;
+
+            if(t_enemiesKilled > t_maxEnemiesKilled)
+            {
+                t_enemiesKilled = 0f;
+                enemiesKilled = 0;
             }
         }
     }

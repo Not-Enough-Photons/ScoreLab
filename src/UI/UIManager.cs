@@ -39,8 +39,6 @@ namespace NEP.Scoreworks.UI
         public float followDistance = 2f;
         public float followLerp = 6f;
 
-        public bool useHead = true;
-
         public static Dictionary<SWScoreType, UIModule> scoreDictionary { get; private set; }
         public static Dictionary<SWMultiplierType, UIModule> multDictionary { get; private set; }
 
@@ -56,6 +54,8 @@ namespace NEP.Scoreworks.UI
 
             InitializeRegions();
 
+            UpdateScoreModules(null);
+            UpdateMultiplierModules(null);
             UpdateHighScoreModule(null);
 
             // HUD settings
@@ -343,8 +343,8 @@ namespace NEP.Scoreworks.UI
                 return;
             }
 
-            Vector3 targetAxis = useHead ? followTarget.forward : -followTarget.up;
-            followTarget = useHead ? head : chest;
+            Vector3 targetAxis = hudSettings.followHead ? followTarget.forward : -followTarget.up;
+            followTarget = hudSettings.followHead ? head : chest;
 
             Vector3 move = Vector3.Lerp(transform.position, followTarget.position + targetAxis * hudSettings.followDistance, hudSettings.followLerp * Time.deltaTime);
             Quaternion lookRot = Quaternion.LookRotation(followTarget.forward);

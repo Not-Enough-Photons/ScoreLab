@@ -85,8 +85,6 @@ namespace NEP.Scoreworks
 
             new Core.Director();
             new Audio.AudioManager();
-
-            SpawnHUD(lastUI);
         }
 
         public override void OnSceneWasUnloaded(int buildIndex, string sceneName)
@@ -118,9 +116,51 @@ namespace NEP.Scoreworks
 
         private void SetupHUDSettings(MenuCategory category)
         {
-            category.CreateFloatElement("Follow Distance", Color.white, 1f, (newValue) => uiObject.GetComponent<UI.UIManager>().hudSettings.followDistance = newValue, 1f, 0f, float.PositiveInfinity, true);
-            category.CreateFloatElement("Follow Lerp", Color.white, 1f, (newValue) => uiObject.GetComponent<UI.UIManager>().hudSettings.followLerp = newValue, 1f, 0f, float.PositiveInfinity, true);
-            category.CreateBoolElement("Follow Head", Color.white, true, (newValue) => uiObject.GetComponent<UI.UIManager>().useHead = newValue);
+            category.CreateFloatElement("Follow Distance", Color.white, 1f, (newValue) => UpdateHUDFollowDistance(newValue), 1f, 0f, float.PositiveInfinity, true);
+            category.CreateFloatElement("Follow Lerp", Color.white, 1f, (newValue) => UpdateHUDFollowLerp(newValue), 1f, 0f, float.PositiveInfinity, true);
+            category.CreateBoolElement("Follow Head", Color.white, true, (newValue) => UpdateHUDFollowHead(newValue));
+        }
+
+        private void UpdateHUDFollowDistance(float value)
+        {
+            UI.UIManager manager = uiObject.GetComponent<UI.UIManager>();
+
+            if(manager == null)
+            {
+                return;
+            }
+
+            manager.hudSettings.followDistance = value;
+
+            DataManager.SaveHUDSettings();
+        }
+
+        private void UpdateHUDFollowLerp(float value)
+        {
+            UI.UIManager manager = uiObject.GetComponent<UI.UIManager>();
+
+            if (manager == null)
+            {
+                return;
+            }
+
+            manager.hudSettings.followLerp = value;
+
+            DataManager.SaveHUDSettings();
+        }
+
+        private void UpdateHUDFollowHead(bool value)
+        {
+            UI.UIManager manager = uiObject.GetComponent<UI.UIManager>();
+
+            if (manager == null)
+            {
+                return;
+            }
+
+            manager.hudSettings.followHead = value;
+
+            DataManager.SaveHUDSettings();
         }
 
         private void SetupHighScoreSettings(MenuCategory category)
