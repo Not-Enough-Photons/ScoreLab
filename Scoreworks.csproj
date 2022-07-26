@@ -23,6 +23,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -72,6 +73,9 @@
     </Reference>
     <Reference Include="Il2CppSystem">
       <HintPath>E:\Steam Games\steamapps\common\BONEWORKS\BONEWORKS\MelonLoader\Managed\Il2CppSystem.dll</HintPath>
+    </Reference>
+    <Reference Include="JeviLib">
+      <HintPath>E:\Steam Games\steamapps\common\BONEWORKS\BONEWORKS\Mods\JeviLib.dll</HintPath>
     </Reference>
     <Reference Include="MelonLoader">
       <HintPath>E:\Steam Games\steamapps\common\BONEWORKS\BONEWORKS\MelonLoader\MelonLoader.dll</HintPath>

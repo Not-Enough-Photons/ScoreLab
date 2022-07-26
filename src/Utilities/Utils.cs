@@ -1,11 +1,197 @@
-﻿using MelonLoader;
+﻿using UnityEngine;
 
-using System.Collections.Generic;
+using MelonLoader;
+
+using ModThatIsNotMod.BoneMenu;
+
+using NEP.Scoreworks.Core.Data;
+
+using System;
+using System.Reflection;
+using System.Runtime.InteropServices;
+
+using StressLevelZero.Combat;
 
 namespace NEP.Scoreworks.Utilities
 {
     public static class Utils
     {
+        public static class BoneMenu
+        {
+            public static void SetupBonemenu()
+            {
+                MenuCategory mainCategory = MenuManager.CreateCategory("Scoreworks Settings", Color.white);
+                MenuCategory hudCategory = mainCategory.CreateSubCategory("HUDs", Color.blue);
+                MenuCategory hudSettingsCategory = mainCategory.CreateSubCategory("HUD Settings", Color.white);
+                MenuCategory highScoreCategory = mainCategory.CreateSubCategory("High Score Settings", Color.white);
+                SetupHUDSettings(hudSettingsCategory);
+                SetupHighScoreSettings(highScoreCategory);
+
+                foreach (GameObject uiObject in Main.instance.customUIs)
+                {
+                    hudCategory.CreateFunctionElement(uiObject.name, Color.white, () => Main.instance.SpawnHUD(uiObject));
+                }
+            }
+
+            public static void SetupHUDSettings(MenuCategory category)
+            {
+                category.CreateFloatElement("Follow Distance", Color.white, 1f, (newValue) => UpdateHUDFollowDistance(newValue), 1f, 0f, float.PositiveInfinity, true);
+                category.CreateFloatElement("Follow Lerp", Color.white, 1f, (newValue) => UpdateHUDFollowLerp(newValue), 1f, 0f, float.PositiveInfinity, true);
+                category.CreateBoolElement("Follow Head", Color.white, true, (newValue) => UpdateHUDFollowHead(newValue));
+            }
+
+            public static void SetupHighScoreSettings(MenuCategory category)
+            {
+                category.CreateFunctionElement("Delete High Score", Color.red, () => DataManager.DeleteHighScore());
+                category.CreateFunctionElement("Delete All High Scores", Color.red, () => DataManager.DeleteAllHighScores());
+                category.CreateFunctionElement("BE VERY CAREFUL WITH THIS", Color.red, null);
+            }
+
+            public static void UpdateHUDFollowDistance(float value)
+            {
+                UI.UIManager manager = Main.instance.uiObject.GetComponent<UI.UIManager>();
+
+                if (manager == null)
+                {
+                    return;
+                }
+
+                manager.hudSettings.followDistance = value;
+
+                DataManager.SaveHUDSettings();
+            }
+
+            public static void UpdateHUDFollowLerp(float value)
+            {
+                UI.UIManager manager = Main.instance.uiObject.GetComponent<UI.UIManager>();
+
+                if (manager == null)
+                {
+                    return;
+                }
+
+                manager.hudSettings.followLerp = value;
+
+                DataManager.SaveHUDSettings();
+            }
+
+            public static void UpdateHUDFollowHead(bool value)
+            {
+                UI.UIManager manager = Main.instance.uiObject.GetComponent<UI.UIManager>();
+
+                if (manager == null)
+                {
+                    return;
+                }
+
+                manager.hudSettings.followHead = value;
+
+                DataManager.SaveHUDSettings();
+            }
+        }
+
+        public static class AttackPatch
+        {
+            private static AttackPatchDelegate _original;
+
+            public delegate void AttackPatchDelegate(IntPtr instance, IntPtr attack, IntPtr method);
+
+            public static event Action<Attack> OnAttackRecieved;
+
+            public static unsafe void Patch()
+            {
+                AttackPatchDelegate patch = Patch;
+
+                string nativeInfoName = "NativeMethodInfoPtr_ReceiveAttack_Public_Virtual_Final_New_Void_Attack_0";
+                var tgtPtr = *(IntPtr*)(IntPtr)typeof(ImpactProperties).GetField(nativeInfoName, BindingFlags.Static | BindingFlags.NonPublic).GetValue(null);
+                var dstPtr = patch.Method.MethodHandle.GetFunctionPointer();
+
+                MelonUtils.NativeHookAttach((IntPtr)(&tgtPtr), dstPtr);
+                _original = Marshal.GetDelegateForFunctionPointer<AttackPatchDelegate>(tgtPtr);
+            }
+
+            public static void Patch(IntPtr instance, IntPtr _attack, IntPtr method)
+            {
+                unsafe
+                {
+                    try
+                    {
+                        var addrAttack = *(Attack_*)_attack;
+
+                        Attack attack = new Attack()
+                        {
+                            damage = addrAttack.damage,
+                            normal = addrAttack.normal,
+                            origin = addrAttack.origin,
+                            force = addrAttack.force,
+                            backFacing = addrAttack.backFacing == 1 ? true : false,
+                            OrderInPool = addrAttack.OrderInPool,
+                            collider = addrAttack.Collider,
+                            attackType = addrAttack.attackType,
+                            proxy = addrAttack.Proxy
+                        };
+
+                        OnAttackRecieved?.Invoke(attack);
+                    }
+                    catch
+                    {
+
+                    }
+                }
+
+                _original(instance, _attack, method);
+            }
+
+            [StructLayout(LayoutKind.Sequential)]
+            public struct Attack_
+            {
+                public float damage;
+                public Vector3 normal;
+                public Vector3 origin;
+                public Vector3 force;
+                public byte backFacing;
+                public int OrderInPool;
+                public IntPtr collider;
+                public AttackType attackType;
+                public IntPtr proxy;
+
+                public Collider Collider
+                {
+                    get
+                    {
+                        return new Collider(collider);
+                    }
+
+                    set
+                    {
+                        collider = value.Pointer;
+                    }
+                }
+
+                public StressLevelZero.AI.TriggerRefProxy Proxy
+                {
+                    get
+                    {
+                        return new StressLevelZero.AI.TriggerRefProxy(proxy);
+                    }
+
+                    set
+                    {
+                        proxy = value.Pointer;
+                    }
+                }
+            }
+        }
+
+        public static string customMapName;
+
+        private static System.Type mapLoadType;
+
+        public static void Initialize()
+        {
+            mapLoadType = Jevil.Utilities.GetTypeFromString("CustomMaps", "MapLoader");
+        }
+
         public static void InitializeMelonPrefs()
         {
             MelonPreferences.CreateCategory("Scoreworks");
@@ -49,6 +235,15 @@ namespace NEP.Scoreworks.Utilities
             }
 
             return "Unknown Scene";
+        }
+
+        public static void OnCustomMapLoad(string currentScene)
+        {
+            if(currentScene == "sandbox_blankBox")
+            {
+                var mapInfo = mapLoadType.GetField("mapInfo", BindingFlags.Static | BindingFlags.Public).GetValue(null);
+                MelonLogger.Msg((string)mapInfo?.GetType().GetField("mapName", BindingFlags.Public).GetValue(null));
+            }
         }
     }
 }

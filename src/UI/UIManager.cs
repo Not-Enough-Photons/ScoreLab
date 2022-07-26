@@ -54,9 +54,7 @@ namespace NEP.Scoreworks.UI
 
             InitializeRegions();
 
-            UpdateScoreModules(null);
-            UpdateMultiplierModules(null);
-            UpdateHighScoreModule(null);
+            InitializeText();
 
             // HUD settings
             ReadHUDSettings();
@@ -67,8 +65,6 @@ namespace NEP.Scoreworks.UI
             head = ModThatIsNotMod.Player.GetPlayerHead().transform; 
 
             followTarget = rigManager.physicsRig.m_chest;
-            followDistance = 3f;
-            followLerp = 6f;
         }
 
         private void OnEnable()
@@ -162,6 +158,14 @@ namespace NEP.Scoreworks.UI
         private void ReadHUDSettings()
         {
             hudSettings = DataManager.ReadHUDSettings();
+        }
+
+        private void InitializeText()
+        {
+            scoreModule.SetText(scoreModule.valueText, ScoreworksManager.instance.currentScore.ToString());
+            multiplierModule.SetText(multiplierModule.valueText, ScoreworksManager.instance.currentMultiplier.ToString());
+            highScoreModule.SetText(highScoreModule.nameText, ScoreworksManager.instance.currentScene);
+            highScoreModule.SetText(highScoreModule.valueText, ScoreworksManager.instance.currentHighScore.ToString());
         }
 
         private void UpdateScoreModules(SWValue value)

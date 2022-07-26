@@ -15,6 +15,8 @@ namespace NEP.Scoreworks.Core.Data
 
         public static Dictionary<string, SWHighScore> highScoreTable { get; private set; }
 
+        public static string dir = MelonLoader.MelonUtils.UserDataDirectory + "/Scoreworks/";
+
         public static void Initialize()
         {
             highScoreTable = new Dictionary<string, SWHighScore>();
@@ -45,7 +47,7 @@ namespace NEP.Scoreworks.Core.Data
 
             string serialized = JsonConvert.SerializeObject(highScoreTable, Formatting.Indented);
 
-            System.IO.File.WriteAllText(MelonLoader.MelonUtils.UserDataDirectory + "/Scoreworks/sw_highscores.json", serialized);
+            System.IO.File.WriteAllText(dir + "sw_highscores.json", serialized);
         }
 
         public static SWHighScore RetrieveHighScore(string sceneName)
@@ -78,6 +80,8 @@ namespace NEP.Scoreworks.Core.Data
             // Save the data to the file
 
             SaveHighScore(manager.currentScene, 0);
+
+            API.OnHighScoreReached?.Invoke(null);
         }
 
         public static void DeleteAllHighScores()
@@ -87,13 +91,15 @@ namespace NEP.Scoreworks.Core.Data
             string serialized = JsonConvert.SerializeObject(highScoreTable, Formatting.Indented);
 
             System.IO.File.WriteAllText(MelonLoader.MelonUtils.UserDataDirectory + "/Scoreworks/sw_highscores.json", serialized);
+
+            API.OnHighScoreReached?.Invoke(null);
         }
 
         public static void BuildScoreValues()
         {
             scoreValues = new Dictionary<SWScoreType, SWValueTemplate>();
 
-            string path = MelonLoader.MelonUtils.UserDataDirectory + "/Scoreworks/sw_score_data.json";
+            string path = dir + "sw_score_data.json";
             string file = System.IO.File.ReadAllText(path);
 
             var dictionary = JsonConvert.DeserializeObject<Dictionary<SWScoreType, SWValueTemplate>>(file);
@@ -112,7 +118,7 @@ namespace NEP.Scoreworks.Core.Data
         {
             multiplierValues = new Dictionary<SWMultiplierType, SWValueTemplate>();
 
-            string path = MelonLoader.MelonUtils.UserDataDirectory + "/Scoreworks/sw_mult_data.json";
+            string path = dir + "/sw_mult_data.json";
             string file = System.IO.File.ReadAllText(path);
 
             var dictionary = JsonConvert.DeserializeObject<Dictionary<SWMultiplierType, SWValueTemplate>>(file);
@@ -130,7 +136,7 @@ namespace NEP.Scoreworks.Core.Data
         // UI Data
         public static UI.UIPadding ReadPadding()
         {
-            string path = MelonLoader.MelonUtils.UserDataDirectory + "/Scoreworks/hud_settings.json";
+            string path = dir + "hud_settings.json";
             string file = System.IO.File.ReadAllText(path);
 
             var hudData = JObject.Parse(file);
@@ -198,7 +204,7 @@ namespace NEP.Scoreworks.Core.Data
 
         public static UI.UISettings ReadHUDSettings()
         {
-            string path = MelonLoader.MelonUtils.UserDataDirectory + "/Scoreworks/hud_settings.json";
+            string path = dir + "/hud_settings.json";
             string file = System.IO.File.ReadAllText(path);
 
             var hudData = JObject.Parse(file);
@@ -218,8 +224,20 @@ namespace NEP.Scoreworks.Core.Data
 
             var data = JsonConvert.SerializeObject(manager.hudSettings, Formatting.Indented);
 
-            System.IO.File.WriteAllText(MelonLoader.MelonUtils.UserDataDirectory + "/Scoreworks/hud_settings.json", data);
+            System.IO.File.WriteAllText(dir + "hud_settings.json", data);
+        }
+
+        public static string GetLastHUD()
+        {
+            string path = dir + "sw_lasthud.txt";
+            string data = System.IO.File.ReadAllText(path);
+            return data;
+        }
+
+        public static void SaveLastHUD(string hud)
+        {
+            string path = dir + "sw_lasthud.txt";
+            System.IO.File.WriteAllText(path, hud);
         }
     }
-
 }

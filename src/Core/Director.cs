@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Reflection;
 
+using System.Runtime.InteropServices;
+
 using UnityEngine;
 
 using PuppetMasta;
@@ -14,6 +16,11 @@ namespace NEP.Scoreworks.Core
 {
     public class Director 
     {
+        public Director()
+        {
+            Initialize();
+        }
+
         public class Patches
         {
             [HarmonyLib.HarmonyPatch(typeof(Arena_GameManager))]
@@ -37,14 +44,8 @@ namespace NEP.Scoreworks.Core
             {
                 public static void Postfix()
                 {
-                    enemiesKilled++;
-
                     new Data.SWValue(Data.SWScoreType.SW_SCORE_KILL);
-
-                    if(enemiesKilled > 1)
-                    {
-                        new Data.SWValue(Data.SWMultiplierType.SW_MULTIPLIER_KILL);
-                    }
+                    new Data.SWValue(Data.SWMultiplierType.SW_MULTIPLIER_KILL);
 
                     if (playerInAir)
                     {
@@ -85,38 +86,6 @@ namespace NEP.Scoreworks.Core
                 }
             }
 
-            [HarmonyLib.HarmonyPatch(typeof(Projectile))]
-            [HarmonyLib.HarmonyPatch(nameof(Projectile.Awake))]
-            public static class Patch_ProjectileCollision
-            {
-                public static void Postfix(Projectile __instance)
-                {
-                    var action = new System.Action<Collider, Vector3, Vector3>((collider, world, normal) =>
-                    {
-                        BehaviourBaseNav baseNav = collider.transform.root.GetComponentInParent<BehaviourBaseNav>();
-
-                        if(baseNav == null)
-                        {
-                            return;
-                        }
-
-                        MelonLoader.MelonLogger.Msg("BLAH BLAH REACHED BASE NAV");
-
-                        if(baseNav.health.cur_hp > 0f)
-                        {
-                            if (collider.attachedRigidbody.name == "Head_M"
-                            || collider.attachedRigidbody.name == "Jaw_M"
-                            || collider.attachedRigidbody.name == "Neck_01")
-                            {
-                                new Data.SWValue(Data.SWMultiplierType.SW_MULTIPLIER_HEADSHOT);
-                            }
-                        }
-                    });
-
-                    __instance.onCollision.AddListener(action);
-                }
-            }
-
             [HarmonyLib.HarmonyPatch(typeof(Zombie_GameControl))]
             [HarmonyLib.HarmonyPatch(nameof(Zombie_GameControl.StartNextWave))]
             public static class Patch_StartNextWave
@@ -148,14 +117,17 @@ namespace NEP.Scoreworks.Core
             }
         }
 
+        public static Director instance;
+
         public static bool playerInAir;
         public static int enemiesKilled;
 
-        private RigManager playerRig;
-        private PhysicsRig physicsRig;
+        public static float t_enemiesKilled;
 
-        private float t_maxEnemiesKilled;
-        private float t_enemiesKilled;
+        private static RigManager playerRig;
+        private static PhysicsRig physicsRig;
+
+        private static float t_maxEnemiesKilled = 1f;
 
         private RigManager GetPlayerRig()
         {
@@ -166,16 +138,40 @@ namespace NEP.Scoreworks.Core
         {
             playerRig = GetPlayerRig();
             physicsRig = playerRig.physicsRig;
+
+            Utilities.Utils.AttackPatch.OnAttackRecieved += OnAttackRecieved;
         }
 
-        public void Update()
+        private void OnAttackRecieved(Attack attack)
         {
-            playerInAir = physicsRig.physBody.ungroundedThisFrame;
+            AIBrain brain = attack.collider.GetComponentInParent<AIBrain>();
+
+            if (brain)
+            {
+                if(brain.behaviour.health.cur_hp <= 0f)
+                {
+                    return;
+                }
+            }
+
+            if (attack.attackType == AttackType.Piercing)
+            {
+                if (attack.collider.name == "Head_M" || attack.collider.name == "Neck_M" || attack.collider.name == "Jaw_M")
+                {
+                    new Data.SWValue(Data.SWScoreType.SW_SCORE_HEADSHOT);
+                    new Data.SWValue(Data.SWMultiplierType.SW_MULTIPLIER_HEADSHOT);
+                }
+            }
+        }
+
+        public static void Update()
+        {
+            playerInAir = !physicsRig.physBody.physG.isGrounded;
 
             EnemiesKilledUpdate();
         }
 
-        private void EnemiesKilledUpdate()
+        private static void EnemiesKilledUpdate()
         {
             if(enemiesKilled < 1)
             {
@@ -186,8 +182,8 @@ namespace NEP.Scoreworks.Core
 
             if(t_enemiesKilled > t_maxEnemiesKilled)
             {
-                t_enemiesKilled = 0f;
                 enemiesKilled = 0;
+                t_enemiesKilled = 0f;
             }
         }
     }

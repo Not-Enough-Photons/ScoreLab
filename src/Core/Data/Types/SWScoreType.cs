@@ -3,6 +3,7 @@
     public enum SWScoreType
     {
         SW_SCORE_KILL,
+        SW_SCORE_HEADSHOT,
         SW_SCORE_MIDAIR_KILL,
         SW_SCORE_PROJECTILE_HIT,
         SW_SCORE_CRABCEST,
