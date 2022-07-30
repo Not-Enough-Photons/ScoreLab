@@ -169,10 +169,8 @@ namespace NEP.Scoreworks.Core
                 {
                     currentMultiplier = 1f;
                 }
-                else
-                {
-                    currentMultiplier -= value.multiplier;
-                }
+                
+                currentMultiplier -= value.multiplier;
                 
                 swValues.Remove(value);
                 multDict.Remove(value.multiplierType);

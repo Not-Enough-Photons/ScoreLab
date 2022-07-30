@@ -53,7 +53,6 @@ namespace NEP.Scoreworks.UI
             rootCanvas = transform.GetChild(0);
 
             InitializeRegions();
-
             InitializeText();
 
             // HUD settings

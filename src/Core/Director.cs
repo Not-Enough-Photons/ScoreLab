@@ -10,7 +10,9 @@ using PuppetMasta;
 using StressLevelZero.AI;
 using StressLevelZero.Arena;
 using StressLevelZero.Combat;
+using StressLevelZero.Interaction;
 using StressLevelZero.Rig;
+using StressLevelZero.Props.Weapons;
 
 namespace NEP.Scoreworks.Core
 {
@@ -54,6 +56,21 @@ namespace NEP.Scoreworks.Core
                 }
             }
 
+            [HarmonyLib.HarmonyPatch(typeof(Hand))]
+            [HarmonyLib.HarmonyPatch(nameof(Hand.AttachObject))]
+            public static class Patch_FindNimbus
+            {
+                public static void Postfix(GameObject objectToAttach)
+                {
+                    if(objectToAttach == null)
+                    {
+                        return;
+                    }
+
+                    nimbusGun = objectToAttach.GetComponentInParent<FlyingGun>();
+                }
+            }
+
             [HarmonyLib.HarmonyPatch(typeof(BehaviourCrablet))]
             [HarmonyLib.HarmonyPatch(nameof(BehaviourCrablet.AttachToFace))]
             public static class Patch_AttachToFace
@@ -83,6 +100,32 @@ namespace NEP.Scoreworks.Core
                 public static void Postfix()
                 {
                     new Data.SWValue(Data.SWMultiplierType.SW_MULTIPLIER_SECOND_WIND);
+                }
+            }
+
+            [HarmonyLib.HarmonyPatch(typeof(Projectile))]
+            [HarmonyLib.HarmonyPatch(nameof(Projectile.Awake))]
+            public static class Patch_ProjectileChecks
+            {
+                public static void Postfix(Projectile __instance)
+                {
+                    var action = new System.Action<Collider, Vector3, Vector3>((collider, world, normal) =>
+                    {
+                        var hitProjectile = collider.GetComponent<RigidbodyProjectile>();
+
+                        if (hitProjectile)
+                        {
+                            Vector3 projectilePos = hitProjectile.transform.position;
+                            Vector3 playerPos = ModThatIsNotMod.Player.GetPlayerHead().transform.position;
+
+                            if(Vector3.Distance(projectilePos, playerPos) < 0.5f)
+                            {
+                                new Data.SWValue(Data.SWScoreType.SW_SCORE_CLOSE_CALL);
+                            }
+                        }
+                    });
+
+                    __instance.onCollision.AddListener(action);
                 }
             }
 
@@ -129,6 +172,8 @@ namespace NEP.Scoreworks.Core
 
         private static float t_maxEnemiesKilled = 1f;
 
+        private static FlyingGun nimbusGun;
+
         private RigManager GetPlayerRig()
         {
             return ModThatIsNotMod.Player.GetRigManager().GetComponent<RigManager>();
@@ -139,10 +184,11 @@ namespace NEP.Scoreworks.Core
             playerRig = GetPlayerRig();
             physicsRig = playerRig.physicsRig;
 
-            Utilities.Utils.AttackPatch.OnAttackRecieved += OnAttackRecieved;
+            Utilities.Utils.ImpactPropertiesPatch.OnAttackRecieved += ImpactPropertiesAttack;
+            Utilities.Utils.RigidbodyProjectilePatch.OnAttackRecieved += RigidbodyProjectileAttack;
         }
 
-        private void OnAttackRecieved(Attack attack)
+        private void ImpactPropertiesAttack(Attack attack)
         {
             AIBrain brain = attack.collider.GetComponentInParent<AIBrain>();
 
@@ -158,17 +204,42 @@ namespace NEP.Scoreworks.Core
             {
                 if (attack.collider.name == "Head_M" || attack.collider.name == "Neck_M" || attack.collider.name == "Jaw_M")
                 {
-                    new Data.SWValue(Data.SWScoreType.SW_SCORE_HEADSHOT);
-                    new Data.SWValue(Data.SWMultiplierType.SW_MULTIPLIER_HEADSHOT);
+                    if(brain.behaviour.health.cur_hp <= attack.damage)
+                    {
+                        new Data.SWValue(Data.SWScoreType.SW_SCORE_HEADSHOT);
+                        new Data.SWValue(Data.SWMultiplierType.SW_MULTIPLIER_HEADSHOT);
+                    }
+                }
+            }
+        }
+
+        private void RigidbodyProjectileAttack(Attack attack)
+        {
+            if(attack.attackType == AttackType.Piercing)
+            {
+                Vector3 playerPos = ModThatIsNotMod.Player.GetPlayerHead().transform.position;
+
+                if(Vector3.Distance(attack.origin, playerPos) < 2f)
+                {
+                    new Data.SWValue(Data.SWScoreType.SW_SCORE_CLOSE_CALL);
                 }
             }
         }
 
         public static void Update()
         {
-            playerInAir = !physicsRig.physBody.physG.isGrounded;
-
             EnemiesKilledUpdate();
+
+            if (nimbusGun)
+            {
+                if (nimbusGun.noClip)
+                {
+                    playerInAir = false;
+                    return;
+                }
+            }
+
+            playerInAir = !physicsRig.physBody.physG.isGrounded;
         }
 
         private static void EnemiesKilledUpdate()

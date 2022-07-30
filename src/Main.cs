@@ -2,11 +2,7 @@
 
 using MelonLoader;
 
-using ModThatIsNotMod.BoneMenu;
-
 using UnityEngine;
-
-using UnhollowerBaseLib;
 
 using NEP.Scoreworks.Core.Data;
 using NEP.Scoreworks.Utilities;
@@ -35,34 +31,19 @@ namespace NEP.Scoreworks
         private string[] bundleFiles;
         private AssetBundle[] bundles;
 
-        private Core.Director director;
-
         public override void OnApplicationStart()
         {
             instance = this;
 
-            Utilities.Utils.InitializeMelonPrefs();
-
-            bundleFiles = System.IO.Directory.GetFiles(MelonUtils.UserDataDirectory + "/Scoreworks/HUDs/");
-            bundles = new AssetBundle[bundleFiles.Length];
-            customUIs = new GameObject[bundles.Length];
-
-            for(int i = 0; i < bundles.Length; i++)
-            {
-                bundles[i] = AssetBundle.LoadFromFile(bundleFiles[i]);
-                customUIs[i] = bundles[i].LoadAsset("SWHud.prefab").Cast<GameObject>();
-                customUIs[i].name = bundles[i].name;
-
-                MelonLogger.Msg($"Loaded " + bundles[i].name);
-                customUIs[i].hideFlags = HideFlags.DontUnloadUnusedAsset;
-            }
+            InitializeBundles();
 
             Utils.BoneMenu.SetupBonemenu();
 
             new Core.ScoreworksManager();
             DataManager.Initialize();
 
-            Utils.AttackPatch.Patch();
+            Utils.ImpactPropertiesPatch.Patch();
+            Utils.RigidbodyProjectilePatch.Patch();
         }
 
         public override void OnApplicationQuit()
@@ -74,20 +55,7 @@ namespace NEP.Scoreworks
         {
             lastUI = DataManager.GetLastHUD();
 
-            Core.ScoreworksManager.instance.currentSceneLiteral = sceneName;
-            Core.ScoreworksManager.instance.currentScene = Utils.GetLevelFromSceneName(sceneName);
-
-            if (DataManager.highScoreTable.ContainsKey(sceneName))
-            {
-                Core.ScoreworksManager.instance.currentHighScore = DataManager.RetrieveHighScore(sceneName).highScore;
-            }
-            else
-            {
-                Core.ScoreworksManager.instance.currentHighScore = 0;
-            }
-
-            Core.ScoreworksManager.instance.currentScore = 0;
-            Core.ScoreworksManager.instance.currentMultiplier = 0f;
+            ResetScoreManager(sceneName);
 
             new Core.Director();
             new Audio.AudioManager();
@@ -109,7 +77,6 @@ namespace NEP.Scoreworks
         {
             Core.ScoreworksManager.instance?.Update();
             Core.Director.Update();
-
         }
 
         public void SpawnHUD(GameObject hudObject)
@@ -149,9 +116,43 @@ namespace NEP.Scoreworks
             SpawnHUD(selectedHud);
         }
 
-        private AssetBundle GetBundle()
+        private void InitializeBundles()
         {
-            return AssetBundle.LoadFromFile(MelonUtils.UserDataDirectory + "/Scoreworks/basehud.hud");
+            bundleFiles = System.IO.Directory.GetFiles(MelonUtils.UserDataDirectory + "/Scoreworks/HUDs/");
+            bundles = new AssetBundle[bundleFiles.Length];
+            customUIs = new GameObject[bundles.Length];
+
+            for (int i = 0; i < bundles.Length; i++)
+            {
+                bundles[i] = AssetBundle.LoadFromFile(bundleFiles[i]);
+                customUIs[i] = bundles[i].LoadAsset("SWHud.prefab").Cast<GameObject>();
+                customUIs[i].name = bundles[i].name;
+
+                MelonLogger.Msg($"Loaded " + bundles[i].name);
+                customUIs[i].hideFlags = HideFlags.DontUnloadUnusedAsset;
+            }
+        }
+
+        private void ResetScoreManager(string sceneName)
+        {
+            Core.ScoreworksManager.instance.currentSceneLiteral = sceneName;
+            Core.ScoreworksManager.instance.currentScene = Utils.GetLevelFromSceneName(sceneName);
+
+            if (DataManager.highScoreTable.ContainsKey(sceneName))
+            {
+                Core.ScoreworksManager.instance.currentHighScore = DataManager.RetrieveHighScore(sceneName).highScore;
+            }
+            else
+            {
+                Core.ScoreworksManager.instance.currentHighScore = 0;
+            }
+
+            Core.ScoreworksManager.instance.currentScore = 0;
+            Core.ScoreworksManager.instance.currentMultiplier = 1f;
+
+            Core.ScoreworksManager.scoreDict.Clear();
+            Core.ScoreworksManager.multDict.Clear();
+            Core.ScoreworksManager.swValues.Clear();
         }
     }
 }
