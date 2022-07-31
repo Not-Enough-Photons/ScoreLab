@@ -46,12 +46,17 @@ namespace NEP.Scoreworks.Core
             {
                 public static void Postfix()
                 {
-                    new Data.SWValue(Data.SWScoreType.SW_SCORE_KILL);
-                    new Data.SWValue(Data.SWMultiplierType.SW_MULTIPLIER_KILL);
-
-                    if (playerInAir)
+                    // stops scoreworks from finding that enemy that died on the first frame
+                    // of which the level was loaded
+                    if(Time.timeSinceLevelLoad > Mathf.Epsilon)
                     {
-                        new Data.SWValue(Data.SWScoreType.SW_SCORE_MIDAIR_KILL);
+                        new Data.SWValue(Data.SWScoreType.SW_SCORE_KILL);
+                        new Data.SWValue(Data.SWMultiplierType.SW_MULTIPLIER_KILL);
+
+                        if (playerInAir)
+                        {
+                            new Data.SWValue(Data.SWScoreType.SW_SCORE_MIDAIR_KILL);
+                        }
                     }
                 }
             }

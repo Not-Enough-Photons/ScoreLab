@@ -55,9 +55,6 @@ namespace NEP.Scoreworks.UI
             InitializeRegions();
             InitializeText();
 
-            // HUD settings
-            ReadHUDSettings();
-
             // Follow distance and target
             RigManager rigManager = ModThatIsNotMod.Player.GetRigManager().GetComponent<RigManager>();
             chest = rigManager.physicsRig.m_chest;
@@ -83,6 +80,9 @@ namespace NEP.Scoreworks.UI
             API.OnMultiplierRemoved += DisableMultiplierSubmodule;
 
             API.OnMultiplierChanged += UpdateMultiplierModules;
+
+            // HUD settings
+            ReadHUDSettings();
         }
 
         private void OnDisable()

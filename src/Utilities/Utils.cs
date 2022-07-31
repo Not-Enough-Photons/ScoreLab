@@ -16,6 +16,10 @@ namespace NEP.Scoreworks.Utilities
 {
     public static class Utils
     {
+        public static string customMapName;
+
+        private static Type mapLoaderType;
+
         public static class BoneMenu
         {
             public static void SetupBonemenu()
@@ -303,10 +307,6 @@ namespace NEP.Scoreworks.Utilities
             }
         }
 
-        public static string customMapName;
-
-        private static System.Type mapLoadType;
-
         public static string GetLevelFromSceneName(string currentScene)
         {
             switch (currentScene)
@@ -341,41 +341,58 @@ namespace NEP.Scoreworks.Utilities
             return "Unknown Scene";
         }
 
-        public static void SpawnHUD(GameObject hudObject)
+        public static void HookCustomMaps()
         {
-            if (hudObject == null)
+            // From ModThatIsNotMod
+            foreach (MelonMod mod in MelonHandler.Mods)
             {
-                return;
+                if (mod.Info.Name == "Custom Maps")
+                {
+                    try
+                    {
+                        Assembly assembly = mod.Assembly;
+                        Type customMapsType = assembly.GetType("CustomMaps.CustomMaps");
+                        mapLoaderType = assembly.GetType("CustomMaps.MapLoader");
+                        EventInfo eventInfo = customMapsType.GetEvent("OnCustomMapLoad", BindingFlags.Static | BindingFlags.Public);
+                        MethodInfo hookMethod = typeof(Utils).GetMethod("OnCustomMapLoaded", BindingFlags.Static | BindingFlags.Public);
+                        eventInfo.AddEventHandler(null, Delegate.CreateDelegate(eventInfo.EventHandlerType, hookMethod));
+                    }
+                    catch
+                    {
+
+                    }
+
+                    break;
+                }
             }
-
-            GameObject.Destroy(uiObject);
-
-            uiObject = GameObject.Instantiate(hudObject);
-
-            if (!uiObject.GetComponent<UI.UIManager>())
-            {
-                uiObject.AddComponent<UI.UIManager>();
-            }
-
-            lastUI = uiObject.name.Replace("(Clone)", "");
-            DataManager.SaveLastHUD(lastUI);
         }
 
-        public static void SpawnHUD(string hudName)
+        public static void OnCustomMapLoaded(string name)
         {
-            if (customUIs == null)
+            // From ModThatIsNotMod
+            if (name == "map.bcm")
             {
-                return;
+                try
+                {
+                    FieldInfo mapInfoField = mapLoaderType.GetField("mapInfo", BindingFlags.Public | BindingFlags.Static);
+                    dynamic mapInfo = mapInfoField.GetValue(null);
+                    customMapName = mapInfo.mapName;
+
+                    Core.API.OnHighScoreReached.Invoke(null);
+                    Main.instance.ResetScoreManager(customMapName, true);
+                }
+                catch { }
             }
-
-            GameObject selectedHud = customUIs.FirstOrDefault((hud) => hud.gameObject.name == hudName);
-
-            if (selectedHud == null)
+            else
             {
-                return;
+                Core.API.OnHighScoreReached.Invoke(null);
+                Main.instance.ResetScoreManager(name.Replace(".bcm", ""), true);
             }
+        }
 
-            SpawnHUD(selectedHud);
+        public static string GetCustomMapName()
+        {
+            return customMapName;
         }
     }
 }

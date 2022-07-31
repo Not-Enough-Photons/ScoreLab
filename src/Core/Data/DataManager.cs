@@ -75,11 +75,20 @@ namespace NEP.Scoreworks.Core.Data
 
             // Clear high score from the manager
 
+            manager.currentScore = 0;
             manager.currentHighScore = 0;
 
             // Save the data to the file
 
             SaveHighScore(manager.currentScene, 0);
+
+            // so fucking hacky but it'll do for now
+            UI.UIManager uiManager = GameObject.FindObjectOfType<UI.UIManager>();
+
+            if (uiManager)
+            {
+                uiManager.scoreModule.valueText.text = "0";
+            }
 
             API.OnHighScoreReached?.Invoke(null);
         }
@@ -88,9 +97,22 @@ namespace NEP.Scoreworks.Core.Data
         {
             highScoreTable.Clear();
 
+            var manager = ScoreworksManager.instance;
+
+            manager.currentScore = 0;
+            manager.currentHighScore = 0;
+
             string serialized = JsonConvert.SerializeObject(highScoreTable, Formatting.Indented);
 
             System.IO.File.WriteAllText(MelonLoader.MelonUtils.UserDataDirectory + "/Scoreworks/sw_highscores.json", serialized);
+
+            // so fucking hacky but it'll do for now
+            UI.UIManager uiManager = GameObject.FindObjectOfType<UI.UIManager>();
+
+            if (uiManager)
+            {
+                uiManager.scoreModule.valueText.text = "0";
+            }
 
             API.OnHighScoreReached?.Invoke(null);
         }

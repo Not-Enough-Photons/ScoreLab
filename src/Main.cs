@@ -42,6 +42,8 @@ namespace NEP.Scoreworks
             new Core.ScoreworksManager();
             DataManager.Initialize();
 
+            Utils.HookCustomMaps();
+
             Utils.ImpactPropertiesPatch.Patch();
             Utils.RigidbodyProjectilePatch.Patch();
         }
@@ -55,12 +57,10 @@ namespace NEP.Scoreworks
         {
             lastUI = DataManager.GetLastHUD();
 
-            ResetScoreManager(sceneName);
+            ResetScoreManager(sceneName, false);
 
             new Core.Director();
             new Audio.AudioManager();
-
-            SpawnHUD(lastUI);
         }
 
         public override void OnSceneWasUnloaded(int buildIndex, string sceneName)
@@ -116,6 +116,30 @@ namespace NEP.Scoreworks
             SpawnHUD(selectedHud);
         }
 
+        public void ResetScoreManager(string sceneName, bool isCustomMap)
+        {
+            Core.ScoreworksManager.instance.currentSceneLiteral = sceneName;
+            Core.ScoreworksManager.instance.currentScene = isCustomMap ?  sceneName : Utils.GetLevelFromSceneName(sceneName);
+
+            if (DataManager.highScoreTable.ContainsKey(sceneName))
+            {
+                Core.ScoreworksManager.instance.currentHighScore = DataManager.RetrieveHighScore(sceneName).highScore;
+            }
+            else
+            {
+                Core.ScoreworksManager.instance.currentHighScore = 0;
+            }
+
+            Core.ScoreworksManager.instance.currentScore = 0;
+            Core.ScoreworksManager.instance.currentMultiplier = 1f;
+
+            Core.ScoreworksManager.scoreDict.Clear();
+            Core.ScoreworksManager.multDict.Clear();
+            Core.ScoreworksManager.swValues.Clear();
+
+            SpawnHUD(lastUI);
+        }
+
         private void InitializeBundles()
         {
             bundleFiles = System.IO.Directory.GetFiles(MelonUtils.UserDataDirectory + "/Scoreworks/HUDs/");
@@ -133,26 +157,5 @@ namespace NEP.Scoreworks
             }
         }
 
-        private void ResetScoreManager(string sceneName)
-        {
-            Core.ScoreworksManager.instance.currentSceneLiteral = sceneName;
-            Core.ScoreworksManager.instance.currentScene = Utils.GetLevelFromSceneName(sceneName);
-
-            if (DataManager.highScoreTable.ContainsKey(sceneName))
-            {
-                Core.ScoreworksManager.instance.currentHighScore = DataManager.RetrieveHighScore(sceneName).highScore;
-            }
-            else
-            {
-                Core.ScoreworksManager.instance.currentHighScore = 0;
-            }
-
-            Core.ScoreworksManager.instance.currentScore = 0;
-            Core.ScoreworksManager.instance.currentMultiplier = 1f;
-
-            Core.ScoreworksManager.scoreDict.Clear();
-            Core.ScoreworksManager.multDict.Clear();
-            Core.ScoreworksManager.swValues.Clear();
-        }
     }
 }
