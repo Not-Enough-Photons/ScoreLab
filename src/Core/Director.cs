@@ -208,12 +208,20 @@ namespace NEP.ScoreLab.Core
 
         public static void Update()
         {
-            EnemiesKilledUpdate();
-
-            if (!physicsRig)
+            try
             {
-                playerInAir = !physicsRig.physG.isGrounded;
+                EnemiesKilledUpdate();
+
+                if (!physicsRig)
+                {
+                    playerInAir = !physicsRig.physG.isGrounded;
+                }
             }
+            catch(System.NullReferenceException nullref)
+            {
+
+            }
+            
         }
 
         private static void EnemiesKilledUpdate()
