@@ -7,7 +7,7 @@ using NEP.ScoreLab.Core;
 using NEP.ScoreLab.Core.Data;
 using NEP.ScoreLab.UI.Modules;
 
-using StressLevelZero.Rig;
+using SLZ.Rig;
 
 namespace NEP.ScoreLab.UI
 {
@@ -39,16 +39,16 @@ namespace NEP.ScoreLab.UI
         public float followDistance = 2f;
         public float followLerp = 6f;
 
-        public static Dictionary<SWScoreType, UIModule> scoreDictionary { get; private set; }
-        public static Dictionary<SWMultiplierType, UIModule> multDictionary { get; private set; }
+        public static Dictionary<SLScoreType, UIModule> scoreDictionary { get; private set; }
+        public static Dictionary<SLMultiplierType, UIModule> multDictionary { get; private set; }
 
         private Transform chest;
         private Transform head;
 
         private void Start()
         {
-            scoreDictionary = new Dictionary<SWScoreType, UIModule>();
-            multDictionary = new Dictionary<SWMultiplierType, UIModule>();
+            scoreDictionary = new Dictionary<SLScoreType, UIModule>();
+            multDictionary = new Dictionary<SLMultiplierType, UIModule>();
 
             rootCanvas = transform.GetChild(0);
 
@@ -56,9 +56,9 @@ namespace NEP.ScoreLab.UI
             InitializeText();
 
             // Follow distance and target
-            RigManager rigManager = ModThatIsNotMod.Player.GetRigManager().GetComponent<RigManager>();
+            RigManager rigManager = FindObjectOfType<RigManager>();
             chest = rigManager.physicsRig.m_chest;
-            head = ModThatIsNotMod.Player.GetPlayerHead().transform; 
+            head = rigManager.physicsRig.m_head.transform; 
 
             followTarget = rigManager.physicsRig.m_chest;
         }
@@ -161,15 +161,15 @@ namespace NEP.ScoreLab.UI
 
         private void InitializeText()
         {
-            scoreModule.SetText(scoreModule.valueText, ScoreworksManager.instance.currentScore.ToString());
-            multiplierModule.SetText(multiplierModule.valueText, ScoreworksManager.instance.currentMultiplier.ToString());
-            highScoreModule.SetText(highScoreModule.nameText, ScoreworksManager.instance.currentScene);
-            highScoreModule.SetText(highScoreModule.valueText, ScoreworksManager.instance.currentHighScore.ToString());
+            scoreModule.SetText(scoreModule.valueText, ScoreLabManager.instance.currentScore.ToString());
+            multiplierModule.SetText(multiplierModule.valueText, ScoreLabManager.instance.currentMultiplier.ToString());
+            highScoreModule.SetText(highScoreModule.nameText, ScoreLabManager.instance.currentScene);
+            highScoreModule.SetText(highScoreModule.valueText, ScoreLabManager.instance.currentHighScore.ToString());
         }
 
-        private void UpdateScoreModules(SWValue value)
+        private void UpdateScoreModules(SLValue value)
         {
-            if (value.type == SWValueType.Score)
+            if (value.type == SLValueType.Score)
             {
                 if (scoreModule == null)
                 {
@@ -177,14 +177,14 @@ namespace NEP.ScoreLab.UI
                 }
 
                 scoreModule.SetText(scoreModule.nameText, value.name);
-                scoreModule.SetText(scoreModule.valueText, ScoreworksManager.instance.currentScore.ToString());
+                scoreModule.SetText(scoreModule.valueText, ScoreLabManager.instance.currentScore.ToString());
                 scoreModule.SetDuration(value.maxDuration);
             }
         }
 
-        private void UpdateScoreSubmodules(SWValue value)
+        private void UpdateScoreSubmodules(SLValue value)
         {
-            if (value.type == SWValueType.Score)
+            if (value.type == SLValueType.Score)
             {
                 if (scoreModule == null)
                 {
@@ -203,7 +203,7 @@ namespace NEP.ScoreLab.UI
                     if (submodule != null)
                     {
                         submodule.SetText(submodule.nameText, value.name);
-                        submodule.SetText(submodule.valueText, ScoreworksManager.instance.currentMultiplier.ToString());
+                        submodule.SetText(submodule.valueText, ScoreLabManager.instance.currentMultiplier.ToString());
                         submodule.SetText(submodule.subValueText, value.name + " | " + value.score);
                         submodule.SetDuration(value.maxDuration);
 
@@ -214,9 +214,9 @@ namespace NEP.ScoreLab.UI
             }
         }
 
-        private void UpdateScoreSubmoduleDuplicates(SWValue value)
+        private void UpdateScoreSubmoduleDuplicates(SLValue value)
         {
-            if (value.type == SWValueType.Score)
+            if (value.type == SLValueType.Score)
             {
                 if (scoreModule == null)
                 {
@@ -233,21 +233,21 @@ namespace NEP.ScoreLab.UI
                 if (submodule != null)
                 {
                     submodule.SetText(submodule.nameText, value.name);
-                    submodule.SetText(submodule.valueText, ScoreworksManager.instance.currentMultiplier.ToString());
+                    submodule.SetText(submodule.valueText, ScoreLabManager.instance.currentMultiplier.ToString());
                     submodule.SetText(submodule.subValueText, value.name + " | " + value.score);
                     submodule.SetDuration(value.maxDuration);
                 }
             }
         }
 
-        private void DisableScoreSubmodule(SWValue value)
+        private void DisableScoreSubmodule(SLValue value)
         {
             scoreDictionary.Remove(value.scoreType);
         }
 
-        private void UpdateMultiplierModules(SWValue value)
+        private void UpdateMultiplierModules(SLValue value)
         {
-            if (value.type == Core.Data.SWValueType.Multiplier)
+            if (value.type == Core.Data.SLValueType.Multiplier)
             {
                 if (multiplierModule == null)
                 {
@@ -255,15 +255,15 @@ namespace NEP.ScoreLab.UI
                 }
 
                 multiplierModule.SetText(multiplierModule.nameText, value.name);
-                multiplierModule.SetText(multiplierModule.valueText, ScoreworksManager.instance.currentMultiplier.ToString());
+                multiplierModule.SetText(multiplierModule.valueText, ScoreLabManager.instance.currentMultiplier.ToString());
                 multiplierModule.SetText(multiplierModule.subValueText, value.multiplier.ToString());
                 multiplierModule.SetDuration(value.maxDuration);
             }
         }
 
-        private void UpdateMultiplierSubmodules(SWValue value)
+        private void UpdateMultiplierSubmodules(SLValue value)
         {
-            if (value.type == SWValueType.Multiplier)
+            if (value.type == SLValueType.Multiplier)
             {
                 if (multiplierModule == null)
                 {
@@ -282,7 +282,7 @@ namespace NEP.ScoreLab.UI
                     if (submodule != null)
                     {
                         submodule.SetText(submodule.nameText, value.name);
-                        submodule.SetText(submodule.valueText, ScoreworksManager.instance.currentMultiplier.ToString());
+                        submodule.SetText(submodule.valueText, ScoreLabManager.instance.currentMultiplier.ToString());
                         submodule.SetText(submodule.subValueText, value.name + " " + value.multiplier.ToString());
                         submodule.SetSlider(value.maxDuration);
                         submodule.SetDuration(value.maxDuration);
@@ -294,9 +294,9 @@ namespace NEP.ScoreLab.UI
             }
         }
 
-        private void UpdateMultiplierSubmoduleDuplicates(SWValue value)
+        private void UpdateMultiplierSubmoduleDuplicates(SLValue value)
         {
-            if (value.type == SWValueType.Multiplier)
+            if (value.type == SLValueType.Multiplier)
             {
                 if (multiplierModule == null)
                 {
@@ -313,7 +313,7 @@ namespace NEP.ScoreLab.UI
                 if (submodule != null)
                 {
                     submodule.SetText(submodule.nameText, value.name);
-                    submodule.SetText(submodule.valueText, ScoreworksManager.instance.currentMultiplier.ToString());
+                    submodule.SetText(submodule.valueText, ScoreLabManager.instance.currentMultiplier.ToString());
                     submodule.SetText(submodule.subValueText, value.name + " " + value.multiplier.ToString());
                     submodule.SetSlider(value.maxDuration);
                     submodule.SetDuration(value.maxDuration);
@@ -321,20 +321,20 @@ namespace NEP.ScoreLab.UI
             }
         }
 
-        private void DisableMultiplierSubmodule(SWValue value)
+        private void DisableMultiplierSubmodule(SLValue value)
         {
             multDictionary.Remove(value.multiplierType);
         }
 
-        private void UpdateHighScoreModule(SWValue value)
+        private void UpdateHighScoreModule(SLValue value)
         {
             if (highScoreModule == null)
             {
                 return;
             }
 
-            highScoreModule.SetText(highScoreModule.nameText, ScoreworksManager.instance.currentScene);
-            highScoreModule.SetText(highScoreModule.valueText, ScoreworksManager.instance.currentHighScore.ToString());
+            highScoreModule.SetText(highScoreModule.nameText, ScoreLabManager.instance.currentScene);
+            highScoreModule.SetText(highScoreModule.valueText, ScoreLabManager.instance.currentHighScore.ToString());
 
             highScoreModule.gameObject.SetActive(true);
         }

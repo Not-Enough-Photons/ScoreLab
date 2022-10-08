@@ -6,26 +6,26 @@ namespace NEP.ScoreLab.Core
 {
     public static class API
     {
-        public static Action<SWValue> OnScorePreAdded;
-        public static Action<SWValue> OnScoreAdded;
+        public static Action<SLValue> OnScorePreAdded;
+        public static Action<SLValue> OnScoreAdded;
 
-        public static Action<SWValue> OnScorePreRemoved;
-        public static Action<SWValue> OnScoreRemoved;
-        public static Action<SWValue> OnScoreLateRemoved;
+        public static Action<SLValue> OnScorePreRemoved;
+        public static Action<SLValue> OnScoreRemoved;
+        public static Action<SLValue> OnScoreLateRemoved;
 
-        public static Action<SWValue> OnMultiplierPreAdded;
-        public static Action<SWValue> OnMultiplierAdded;
+        public static Action<SLValue> OnMultiplierPreAdded;
+        public static Action<SLValue> OnMultiplierAdded;
 
-        public static Action<SWValue> OnMultiplierPreRemoved;
-        public static Action<SWValue> OnMultiplierRemoved;
-        public static Action<SWValue> OnMultiplierLateRemoved;
+        public static Action<SLValue> OnMultiplierPreRemoved;
+        public static Action<SLValue> OnMultiplierRemoved;
+        public static Action<SLValue> OnMultiplierLateRemoved;
 
-        public static Action<SWValue> OnScoreChanged;
-        public static Action<SWValue> OnMultiplierChanged;
+        public static Action<SLValue> OnScoreChanged;
+        public static Action<SLValue> OnMultiplierChanged;
 
-        public static Action<SWValue> OnHighScoreReached;
+        public static Action<SLValue> OnHighScoreReached;
 
-        public static Action<SWValue> OnScoreDuplicated;
-        public static Action<SWValue> OnMultiplierDuplicated;
+        public static Action<SLValue> OnScoreDuplicated;
+        public static Action<SLValue> OnMultiplierDuplicated;
     }
 }

@@ -9,7 +9,7 @@ namespace NEP.ScoreLab.UI.Modules
     public class UIModule : MonoBehaviour
     {
         public UIModule(System.IntPtr ptr) : base(ptr) { }
-        public Core.Data.SWValue refValue;
+        public Core.Data.SLValue refValue;
 
         public UIModuleType moduleType;
 

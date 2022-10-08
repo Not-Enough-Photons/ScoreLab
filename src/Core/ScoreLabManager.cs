@@ -9,20 +9,20 @@ using Newtonsoft.Json;
 
 namespace NEP.ScoreLab.Core
 {
-    public class ScoreworksManager
+    public class ScoreLabManager
     {
-        public ScoreworksManager()
+        public ScoreLabManager()
         {
             Awake();
             Start();
         }
 
-        public static ScoreworksManager instance { get; private set; }
+        public static ScoreLabManager instance { get; private set; }
 
-        public static List<Data.SWValue> swValues = new List<Data.SWValue>();
+        public static List<Data.SLValue> swValues = new List<Data.SLValue>();
 
-        public static Dictionary<Data.SWScoreType, Data.SWValue> scoreDict;
-        public static Dictionary<Data.SWMultiplierType, Data.SWValue> multDict;
+        public static Dictionary<Data.SLScoreType, Data.SLValue> scoreDict;
+        public static Dictionary<Data.SLMultiplierType, Data.SLValue> multDict;
 
         public int currentScore;
         public float currentMultiplier;
@@ -31,8 +31,8 @@ namespace NEP.ScoreLab.Core
         public string currentSceneLiteral;
         public int currentHighScore;
 
-        public List<Data.SWValue> scoreValues { get; private set; }
-        public List<Data.SWValue> multiplierValues { get; private set; }
+        public List<Data.SLValue> scoreValues { get; private set; }
+        public List<Data.SLValue> multiplierValues { get; private set; }
 
         private void Awake()
         {
@@ -41,8 +41,8 @@ namespace NEP.ScoreLab.Core
                 instance = this;
             }
 
-            scoreDict = new Dictionary<Data.SWScoreType, Data.SWValue>();
-            multDict = new Dictionary<Data.SWMultiplierType, Data.SWValue>();
+            scoreDict = new Dictionary<Data.SLScoreType, Data.SLValue>();
+            multDict = new Dictionary<Data.SLMultiplierType, Data.SLValue>();
         }
 
         private void Start()
@@ -75,7 +75,7 @@ namespace NEP.ScoreLab.Core
             }
         }
 
-        public void PreAddScore(Data.SWValue value)
+        public void PreAddScore(Data.SLValue value)
         {
             scoreValues = scoreDict.Values.ToList();
 
@@ -93,9 +93,9 @@ namespace NEP.ScoreLab.Core
             }
         }
 
-        public void AddScore(Data.SWValue value)
+        public void AddScore(Data.SLValue value)
         {
-            if (value.type == Data.SWValueType.Score)
+            if (value.type == Data.SLValueType.Score)
             {
                 if (currentMultiplier > 1f)
                 {
@@ -120,16 +120,16 @@ namespace NEP.ScoreLab.Core
             }
         }
 
-        public void RemoveScore(Data.SWValue value)
+        public void RemoveScore(Data.SLValue value)
         {
-            if (value.type == Data.SWValueType.Score)
+            if (value.type == Data.SLValueType.Score)
             {
                 swValues.Remove(value);
                 scoreDict.Remove(value.scoreType);
             }
         }
 
-        public void PreAddMultiplier(Data.SWValue value)
+        public void PreAddMultiplier(Data.SLValue value)
         {
             multiplierValues = multDict.Values.ToList();
 
@@ -147,9 +147,9 @@ namespace NEP.ScoreLab.Core
             }
         }
 
-        public void AddMultiplier(Data.SWValue value)
+        public void AddMultiplier(Data.SLValue value)
         {
-            if (value.type == Data.SWValueType.Multiplier)
+            if (value.type == Data.SLValueType.Multiplier)
             {
                 currentMultiplier += value.multiplier;
 
@@ -161,9 +161,9 @@ namespace NEP.ScoreLab.Core
             }
         }
 
-        public void RemoveMultiplier(Data.SWValue value)
+        public void RemoveMultiplier(Data.SLValue value)
         {
-            if (value.type == Data.SWValueType.Multiplier)
+            if (value.type == Data.SLValueType.Multiplier)
             {
                 if (currentMultiplier < 1f)
                 {

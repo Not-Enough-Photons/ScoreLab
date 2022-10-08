@@ -7,12 +7,12 @@ using UnityEngine;
 
 using PuppetMasta;
 
-using StressLevelZero.AI;
-using StressLevelZero.Arena;
-using StressLevelZero.Combat;
-using StressLevelZero.Interaction;
-using StressLevelZero.Rig;
-using StressLevelZero.Props.Weapons;
+using SLZ.AI;
+using SLZ.Arena;
+using SLZ.Combat;
+using SLZ.Interaction;
+using SLZ.Rig;
+using SLZ.Props.Weapons;
 
 namespace NEP.ScoreLab.Core
 {
@@ -25,18 +25,23 @@ namespace NEP.ScoreLab.Core
 
         public class Patches
         {
-            [HarmonyLib.HarmonyPatch(typeof(Arena_GameManager))]
-            [HarmonyLib.HarmonyPatch(nameof(Arena_GameManager.StartWave))]
+            [HarmonyLib.HarmonyPatch(typeof(Arena_GameController))]
+            [HarmonyLib.HarmonyPatch(nameof(Arena_GameController.Start))]
             public static class Patch_StartWave
             {
-                public static void Postfix(Arena_GameManager __instance)
+                public static void Postfix(Arena_GameController __instance)
                 {
-                    if(__instance.wave <= 1)
+                    var action = new System.Action(() =>
                     {
-                        return;
-                    }
+                        if(__instance.wave > 1)
+                        {
+                            return;
+                        }
 
-                    new Data.SWValue(Data.SWScoreType.SW_SCORE_FINISH_ARENA_WAVE);
+                        new Data.SLValue(Data.SLScoreType.SL_SCORE_FINISH_ARENA_WAVE);
+                    });
+
+                    __instance.onWaveBegin.AddListener(action);
                 }
             }
 
@@ -50,12 +55,12 @@ namespace NEP.ScoreLab.Core
                     // of which the level was loaded
                     if(Time.timeSinceLevelLoad > Mathf.Epsilon)
                     {
-                        new Data.SWValue(Data.SWScoreType.SW_SCORE_KILL);
-                        new Data.SWValue(Data.SWMultiplierType.SW_MULTIPLIER_KILL);
+                        new Data.SLValue(Data.SLScoreType.SL_SCORE_KILL);
+                        new Data.SLValue(Data.SLMultiplierType.SL_MULTIPLIER_KILL);
 
                         if (playerInAir)
                         {
-                            new Data.SWValue(Data.SWScoreType.SW_SCORE_MIDAIR_KILL);
+                            new Data.SLValue(Data.SLScoreType.SL_SCORE_MIDAIR_KILL);
                         }
                     }
                 }
@@ -89,11 +94,11 @@ namespace NEP.ScoreLab.Core
 
                     if(trp.npcType == TriggerRefProxy.NpcType.Crablet)
                     {
-                        new Data.SWValue(Data.SWScoreType.SW_SCORE_CRABCEST);
+                        new Data.SLValue(Data.SLScoreType.SL_SCORE_CRABCEST);
                     }
                     else
                     {
-                        new Data.SWValue(Data.SWScoreType.SW_SCORE_ATTACH_CRABLET);
+                        new Data.SLValue(Data.SLScoreType.SL_SCORE_ATTACH_CRABLET);
                     }
                 }
             }
@@ -104,7 +109,7 @@ namespace NEP.ScoreLab.Core
             {
                 public static void Postfix()
                 {
-                    new Data.SWValue(Data.SWMultiplierType.SW_MULTIPLIER_SECOND_WIND);
+                    new Data.SLValue(Data.SLMultiplierType.SL_MULTIPLIER_SECOND_WIND);
                 }
             }
 
@@ -121,46 +126,16 @@ namespace NEP.ScoreLab.Core
                         if (hitProjectile)
                         {
                             Vector3 projectilePos = hitProjectile.transform.position;
-                            Vector3 playerPos = ModThatIsNotMod.Player.GetPlayerHead().transform.position;
+                            Vector3 playerPos = GetPlayerRig().physicsRig.m_head.position;
 
                             if(Vector3.Distance(projectilePos, playerPos) < 0.5f)
                             {
-                                new Data.SWValue(Data.SWScoreType.SW_SCORE_CLOSE_CALL);
+                                new Data.SLValue(Data.SLScoreType.SL_SCORE_CLOSE_CALL);
                             }
                         }
                     });
 
                     __instance.onCollision.AddListener(action);
-                }
-            }
-
-            [HarmonyLib.HarmonyPatch(typeof(Zombie_GameControl))]
-            [HarmonyLib.HarmonyPatch(nameof(Zombie_GameControl.StartNextWave))]
-            public static class Patch_StartNextWave
-            {
-                public static void Postfix(Zombie_GameControl __instance)
-                {
-                    if(__instance.currWaveIndex > 1)
-                    {
-                        switch (__instance.difficulty)
-                        {
-                            case Zombie_GameControl.Difficulty.EASY:
-                                new Data.SWValue(Data.SWScoreType.SW_SCORE_ROUND_EASY);
-                                break;
-                            case Zombie_GameControl.Difficulty.MEDIUM:
-                                new Data.SWValue(Data.SWScoreType.SW_SCORE_ROUND_MEDIUM);
-                                break;
-                            case Zombie_GameControl.Difficulty.HARD:
-                                new Data.SWValue(Data.SWScoreType.SW_SCORE_ROUND_HARD);
-                                break;
-                            case Zombie_GameControl.Difficulty.HARDER:
-                                new Data.SWValue(Data.SWScoreType.SW_SCORE_ROUND_HARDER);
-                                break;
-                            case Zombie_GameControl.Difficulty.HARDEST:
-                                new Data.SWValue(Data.SWScoreType.SW_SCORE_ROUND_HARDEST);
-                                break;
-                        }
-                    }
                 }
             }
         }
@@ -179,9 +154,9 @@ namespace NEP.ScoreLab.Core
 
         private static FlyingGun nimbusGun;
 
-        private RigManager GetPlayerRig()
+        private static RigManager GetPlayerRig()
         {
-            return ModThatIsNotMod.Player.GetRigManager().GetComponent<RigManager>();
+            return GameObject.FindObjectOfType<RigManager>();
         }
 
         private void Initialize()
@@ -205,14 +180,14 @@ namespace NEP.ScoreLab.Core
                 }
             }
 
-            if (attack.attackType == AttackType.Piercing)
+            if (attack.attackType == SLZ.Marrow.Data.AttackType.Piercing)
             {
                 if (attack.collider.name == "Head_M" || attack.collider.name == "Neck_M" || attack.collider.name == "Jaw_M")
                 {
                     if(brain.behaviour.health.cur_hp <= attack.damage)
                     {
-                        new Data.SWValue(Data.SWScoreType.SW_SCORE_HEADSHOT);
-                        new Data.SWValue(Data.SWMultiplierType.SW_MULTIPLIER_HEADSHOT);
+                        new Data.SLValue(Data.SLScoreType.SL_SCORE_HEADSHOT);
+                        new Data.SLValue(Data.SLMultiplierType.SL_MULTIPLIER_HEADSHOT);
                     }
                 }
             }
@@ -220,13 +195,13 @@ namespace NEP.ScoreLab.Core
 
         private void RigidbodyProjectileAttack(Attack attack)
         {
-            if(attack.attackType == AttackType.Piercing)
+            if(attack.attackType == SLZ.Marrow.Data.AttackType.Piercing)
             {
-                Vector3 playerPos = ModThatIsNotMod.Player.GetPlayerHead().transform.position;
+                Vector3 playerPos = GetPlayerRig().physicsRig.m_head.position;
 
                 if(Vector3.Distance(attack.origin, playerPos) < 2f)
                 {
-                    new Data.SWValue(Data.SWScoreType.SW_SCORE_CLOSE_CALL);
+                    new Data.SLValue(Data.SLScoreType.SL_SCORE_CLOSE_CALL);
                 }
             }
         }
@@ -235,16 +210,7 @@ namespace NEP.ScoreLab.Core
         {
             EnemiesKilledUpdate();
 
-            if (nimbusGun)
-            {
-                if (nimbusGun.noClip)
-                {
-                    playerInAir = false;
-                    return;
-                }
-            }
-
-            playerInAir = !physicsRig.physBody.physG.isGrounded;
+            playerInAir = !physicsRig.physG.isGrounded;
         }
 
         private static void EnemiesKilledUpdate()

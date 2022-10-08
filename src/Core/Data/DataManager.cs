@@ -10,8 +10,8 @@ namespace NEP.ScoreLab.Core.Data
 {
     public static class DataManager
     {
-        public static Dictionary<SWScoreType, SLValueTemplate> scoreValues { get; private set; }
-        public static Dictionary<SWMultiplierType, SLValueTemplate> multiplierValues { get; private set; }
+        public static Dictionary<SLScoreType, SLValueTemplate> scoreValues { get; private set; }
+        public static Dictionary<SLMultiplierType, SLValueTemplate> multiplierValues { get; private set; }
 
         public static Dictionary<string, SLHighScore> highScoreTable { get; private set; }
 
@@ -31,8 +31,8 @@ namespace NEP.ScoreLab.Core.Data
         {
             if (highScoreTable.ContainsKey(currentScene))
             {
-                highScoreTable[currentScene].currentScene = ScoreworksManager.instance.currentScene;
-                highScoreTable[currentScene].highScore = ScoreworksManager.instance.currentHighScore;
+                highScoreTable[currentScene].currentScene = ScoreLabManager.instance.currentScene;
+                highScoreTable[currentScene].highScore = ScoreLabManager.instance.currentHighScore;
             }
             else
             {
@@ -69,7 +69,7 @@ namespace NEP.ScoreLab.Core.Data
                 return;
             }
 
-            var manager = ScoreworksManager.instance;
+            var manager = ScoreLabManager.instance;
 
             highScoreTable.Remove(manager.currentSceneLiteral);
 
@@ -97,7 +97,7 @@ namespace NEP.ScoreLab.Core.Data
         {
             highScoreTable.Clear();
 
-            var manager = ScoreworksManager.instance;
+            var manager = ScoreLabManager.instance;
 
             manager.currentScore = 0;
             manager.currentHighScore = 0;
@@ -119,18 +119,18 @@ namespace NEP.ScoreLab.Core.Data
 
         public static void BuildScoreValues()
         {
-            scoreValues = new Dictionary<SWScoreType, SLValueTemplate>();
+            scoreValues = new Dictionary<SLScoreType, SLValueTemplate>();
 
             string path = dir + "/ScoreLab/sl_score_data.json";
             string file = System.IO.File.ReadAllText(path);
 
-            var dictionary = JsonConvert.DeserializeObject<Dictionary<SWScoreType, SLValueTemplate>>(file);
+            var dictionary = JsonConvert.DeserializeObject<Dictionary<SLScoreType, SLValueTemplate>>(file);
 
-            string[] enumNames = Enum.GetNames(typeof(SWScoreType));
+            string[] enumNames = Enum.GetNames(typeof(SLScoreType));
 
             foreach (string name in enumNames)
             {
-                SWScoreType scoreType = (SWScoreType)Enum.Parse(typeof(SWScoreType), name);
+                SLScoreType scoreType = (SLScoreType)Enum.Parse(typeof(SLScoreType), name);
                 SLValueTemplate template = dictionary[scoreType];
                 scoreValues?.Add(scoreType, template);
             }
@@ -138,18 +138,18 @@ namespace NEP.ScoreLab.Core.Data
 
         public static void BuildMultiplierValues()
         {
-            multiplierValues = new Dictionary<SWMultiplierType, SLValueTemplate>();
+            multiplierValues = new Dictionary<SLMultiplierType, SLValueTemplate>();
 
             string path = dir + "/ScoreLab/sl_mult_data.json";
             string file = System.IO.File.ReadAllText(path);
 
-            var dictionary = JsonConvert.DeserializeObject<Dictionary<SWMultiplierType, SLValueTemplate>>(file);
+            var dictionary = JsonConvert.DeserializeObject<Dictionary<SLMultiplierType, SLValueTemplate>>(file);
 
-            string[] enumNames = Enum.GetNames(typeof(SWMultiplierType));
+            string[] enumNames = Enum.GetNames(typeof(SLMultiplierType));
 
             foreach (string name in enumNames)
             {
-                Data.SWMultiplierType multType = (SWMultiplierType)Enum.Parse(typeof(SWMultiplierType), name);
+                Data.SLMultiplierType multType = (SLMultiplierType)Enum.Parse(typeof(SLMultiplierType), name);
                 Data.SLValueTemplate template = dictionary[multType];
                 multiplierValues?.Add(multType, template);
             }

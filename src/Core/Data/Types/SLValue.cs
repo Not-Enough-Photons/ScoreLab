@@ -1,9 +1,9 @@
 ﻿namespace NEP.ScoreLab.Core.Data
 {
     [System.Serializable]
-    public class SWValue
+    public class SLValue
     {
-        public SWValue(SWScoreType scoreType)
+        public SLValue(SLScoreType scoreType)
         {
             var dictionary = DataManager.scoreValues;
             SLValueTemplate valueTemplate = dictionary[scoreType];
@@ -12,7 +12,7 @@
 
             name = valueTemplate.name;
             score = valueTemplate.score;
-            type = SWValueType.Score;
+            type = SLValueType.Score;
             stack = valueTemplate.stack;
 
             duration = maxDuration;
@@ -20,7 +20,7 @@
             CreateScore(this);
         }
 
-        public SWValue(SWMultiplierType multiplierType)
+        public SLValue(SLMultiplierType multiplierType)
         {
             var dictionary = DataManager.multiplierValues;
             SLValueTemplate valueTemplate = dictionary[multiplierType];
@@ -32,7 +32,7 @@
             multiplier = valueTemplate.multiplier;
             maxDuration = valueTemplate.maxDuration;
             duration = maxDuration;
-            type = SWValueType.Multiplier;
+            type = SLValueType.Multiplier;
             stack = valueTemplate.stack;
 
             CreateMultiplier(this);
@@ -43,37 +43,37 @@
         public float multiplier;
         public bool stack;
 
-        public SWScoreType scoreType;
-        public SWMultiplierType multiplierType;
+        public SLScoreType scoreType;
+        public SLMultiplierType multiplierType;
 
         public bool cleaned = false;
 
-        public SWValueType type;
+        public SLValueType type;
 
         public float maxDuration = 5f;
         public float duration;
 
-        public void CreateScore(SWValue value)
+        public void CreateScore(SLValue value)
         {
-            if (value.type == SWValueType.Score)
+            if (value.type == SLValueType.Score)
             {
                 API.OnScorePreAdded?.Invoke(value);
                 API.OnScoreAdded?.Invoke(value);
             }
         }
 
-        public void DestroyScore(SWValue value)
+        public void DestroyScore(SLValue value)
         {
-            if (value.type == SWValueType.Score)
+            if (value.type == SLValueType.Score)
             {
                 API.OnScorePreRemoved?.Invoke(value);
                 API.OnScoreRemoved?.Invoke(value);
             }
         }
 
-        public void CreateMultiplier(SWValue value)
+        public void CreateMultiplier(SLValue value)
         {
-            if (value.type == SWValueType.Multiplier)
+            if (value.type == SLValueType.Multiplier)
             {
                 API.OnMultiplierPreAdded?.Invoke(value);
                 API.OnMultiplierAdded?.Invoke(value);
@@ -81,9 +81,9 @@
             }
         }
 
-        public void DestroyMultiplier(SWValue value)
+        public void DestroyMultiplier(SLValue value)
         {
-            if (value.type == SWValueType.Multiplier)
+            if (value.type == SLValueType.Multiplier)
             {
                 API.OnMultiplierPreRemoved?.Invoke(value);
                 API.OnMultiplierRemoved?.Invoke(value);
@@ -97,11 +97,11 @@
 
             if (duration <= 0f)
             {
-                if (type == SWValueType.Score)
+                if (type == SLValueType.Score)
                 {
                     DestroyScore(this);
                 }
-                else if (type == SWValueType.Multiplier)
+                else if (type == SLValueType.Multiplier)
                 {
                     DestroyMultiplier(this);
                 }

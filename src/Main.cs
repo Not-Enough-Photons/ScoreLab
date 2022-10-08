@@ -37,7 +37,7 @@ namespace NEP.ScoreLab
 
             InitializeBundles();
 
-            new Core.ScoreworksManager();
+            new Core.ScoreLabManager();
             DataManager.Initialize();
 
             Utils.ImpactPropertiesPatch.Patch();
@@ -46,7 +46,7 @@ namespace NEP.ScoreLab
 
         public override void OnApplicationQuit()
         {
-            DataManager.SaveHighScore(Core.ScoreworksManager.instance.currentSceneLiteral, Core.ScoreworksManager.instance.currentHighScore);
+            DataManager.SaveHighScore(Core.ScoreLabManager.instance.currentSceneLiteral, Core.ScoreLabManager.instance.currentHighScore);
         }
 
         public override void OnSceneWasLoaded(int buildIndex, string sceneName)
@@ -66,12 +66,12 @@ namespace NEP.ScoreLab
                 return;
             }
 
-            DataManager.SaveHighScore(Core.ScoreworksManager.instance.currentSceneLiteral, Core.ScoreworksManager.instance.currentScore);
+            DataManager.SaveHighScore(Core.ScoreLabManager.instance.currentSceneLiteral, Core.ScoreLabManager.instance.currentScore);
         }
 
         public override void OnUpdate()
         {
-            Core.ScoreworksManager.instance?.Update();
+            Core.ScoreLabManager.instance?.Update();
             Core.Director.Update();
         }
 
@@ -114,24 +114,24 @@ namespace NEP.ScoreLab
 
         public void ResetScoreManager(string sceneName, bool isCustomMap)
         {
-            Core.ScoreworksManager.instance.currentSceneLiteral = sceneName;
-            Core.ScoreworksManager.instance.currentScene = isCustomMap ?  sceneName : Utils.GetLevelFromSceneName(sceneName);
+            Core.ScoreLabManager.instance.currentSceneLiteral = sceneName;
+            Core.ScoreLabManager.instance.currentScene = isCustomMap ?  sceneName : Utils.GetLevelFromSceneName(sceneName);
 
             if (DataManager.highScoreTable.ContainsKey(sceneName))
             {
-                Core.ScoreworksManager.instance.currentHighScore = DataManager.RetrieveHighScore(sceneName).highScore;
+                Core.ScoreLabManager.instance.currentHighScore = DataManager.RetrieveHighScore(sceneName).highScore;
             }
             else
             {
-                Core.ScoreworksManager.instance.currentHighScore = 0;
+                Core.ScoreLabManager.instance.currentHighScore = 0;
             }
 
-            Core.ScoreworksManager.instance.currentScore = 0;
-            Core.ScoreworksManager.instance.currentMultiplier = 1f;
+            Core.ScoreLabManager.instance.currentScore = 0;
+            Core.ScoreLabManager.instance.currentMultiplier = 1f;
 
-            Core.ScoreworksManager.scoreDict.Clear();
-            Core.ScoreworksManager.multDict.Clear();
-            Core.ScoreworksManager.swValues.Clear();
+            Core.ScoreLabManager.scoreDict.Clear();
+            Core.ScoreLabManager.multDict.Clear();
+            Core.ScoreLabManager.swValues.Clear();
 
             SpawnHUD(lastUI);
         }
