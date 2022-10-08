@@ -60,7 +60,7 @@ namespace NEP.ScoreLab.UI
             chest = rigManager.physicsRig.m_chest;
             head = rigManager.physicsRig.m_head.transform; 
 
-            followTarget = rigManager.physicsRig.m_chest;
+            followTarget = rigManager.realHeptaRig.m_head;
         }
 
         private void OnEnable()
@@ -346,10 +346,9 @@ namespace NEP.ScoreLab.UI
                 return;
             }
 
-            Vector3 targetAxis = hudSettings.followHead ? followTarget.forward : -followTarget.up;
             followTarget = hudSettings.followHead ? head : chest;
 
-            Vector3 move = Vector3.Lerp(transform.position, followTarget.position + targetAxis * hudSettings.followDistance, hudSettings.followLerp * Time.deltaTime);
+            Vector3 move = Vector3.Lerp(transform.position, followTarget.position + followTarget.forward * hudSettings.followDistance, hudSettings.followLerp * Time.deltaTime);
             Quaternion lookRot = Quaternion.LookRotation(followTarget.forward);
 
             transform.position = move;

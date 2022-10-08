@@ -210,7 +210,10 @@ namespace NEP.ScoreLab.Core
         {
             EnemiesKilledUpdate();
 
-            playerInAir = !physicsRig.physG.isGrounded;
+            if (!physicsRig)
+            {
+                playerInAir = !physicsRig.physG.isGrounded;
+            }
         }
 
         private static void EnemiesKilledUpdate()

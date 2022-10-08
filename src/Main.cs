@@ -11,7 +11,7 @@ namespace NEP.ScoreLab
 {
     public static class BuildInfo
     {
-        public const string Name = "Scoreworks - Version 3.0"; // Name of the Mod.  (MUST BE SET)
+        public const string Name = "ScoreLab"; // Name of the Mod.  (MUST BE SET)
         public const string Author = "Not Enough Photons"; // Author of the Mod.  (Set as null if none)
         public const string Company = null; // Company that made the Mod.  (Set as null if none)
         public const string Version = "3.0.0"; // Version of the Mod.  (MUST BE SET)
@@ -51,6 +51,11 @@ namespace NEP.ScoreLab
 
         public override void OnSceneWasLoaded(int buildIndex, string sceneName)
         {
+            if(sceneName == "scene_GameBootstrap")
+            {
+                return;
+            }
+
             lastUI = DataManager.GetLastHUD();
 
             ResetScoreManager(sceneName, false);
@@ -138,7 +143,7 @@ namespace NEP.ScoreLab
 
         private void InitializeBundles()
         {
-            bundleFiles = System.IO.Directory.GetFiles(MelonUtils.UserDataDirectory + "/Scoreworks/HUDs/");
+            bundleFiles = System.IO.Directory.GetFiles(MelonUtils.UserDataDirectory + "/Not Enough Photons/ScoreLab/HUDs/");
             bundles = new AssetBundle[bundleFiles.Length];
             customUIs = new GameObject[bundles.Length];
 

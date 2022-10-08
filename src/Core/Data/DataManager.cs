@@ -251,14 +251,14 @@ namespace NEP.ScoreLab.Core.Data
 
         public static string GetLastHUD()
         {
-            string path = dir + "/ScoreLab/sw_lasthud.txt";
+            string path = dir + "/ScoreLab/sl_lasthud.txt";
             string data = System.IO.File.ReadAllText(path);
             return data;
         }
 
         public static void SaveLastHUD(string hud)
         {
-            string path = dir + "/ScoreLab/sw_lasthud.txt";
+            string path = dir + "/ScoreLab/sl_lasthud.txt";
             System.IO.File.WriteAllText(path, hud);
         }
     }
