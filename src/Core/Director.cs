@@ -14,7 +14,7 @@ using StressLevelZero.Interaction;
 using StressLevelZero.Rig;
 using StressLevelZero.Props.Weapons;
 
-namespace NEP.Scoreworks.Core
+namespace NEP.ScoreLab.Core
 {
     public class Director 
     {

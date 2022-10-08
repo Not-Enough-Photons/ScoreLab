@@ -1,4 +1,4 @@
-﻿namespace NEP.Scoreworks.Core.Data
+﻿namespace NEP.ScoreLab.Core.Data
 {
     public enum SWValueType
     {

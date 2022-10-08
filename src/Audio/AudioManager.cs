@@ -3,13 +3,13 @@ using System.IO;
 
 using UnityEngine;
 
-using AudioImportLib;
+//using AudioImportLib;
 
-namespace NEP.Scoreworks.Audio
+namespace NEP.ScoreLab.Audio
 {
     public class AudioManager
     {
-        public AudioManager()
+        /*public AudioManager()
         {
             Awake();
             Start();
@@ -93,6 +93,6 @@ namespace NEP.Scoreworks.Audio
             source.clip = random;
             source.pitch = 1f + (Core.ScoreworksManager.instance.currentMultiplier / 10f);
             source.Play();
-        }
+        }*/
     }
 }

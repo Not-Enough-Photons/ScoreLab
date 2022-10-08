@@ -4,10 +4,10 @@ using MelonLoader;
 
 using UnityEngine;
 
-using NEP.Scoreworks.Core.Data;
-using NEP.Scoreworks.Utilities;
+using NEP.ScoreLab.Core.Data;
+using NEP.ScoreLab.Utilities;
 
-namespace NEP.Scoreworks
+namespace NEP.ScoreLab
 {
     public static class BuildInfo
     {
@@ -37,12 +37,8 @@ namespace NEP.Scoreworks
 
             InitializeBundles();
 
-            Utils.BoneMenu.SetupBonemenu();
-
             new Core.ScoreworksManager();
             DataManager.Initialize();
-
-            Utils.HookCustomMaps();
 
             Utils.ImpactPropertiesPatch.Patch();
             Utils.RigidbodyProjectilePatch.Patch();

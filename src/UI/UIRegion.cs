@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace NEP.Scoreworks.UI
+namespace NEP.ScoreLab.UI
 {
     [MelonLoader.RegisterTypeInIl2Cpp]
     public class UIRegion : MonoBehaviour

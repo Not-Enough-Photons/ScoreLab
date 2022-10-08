@@ -1,8 +1,8 @@
 ﻿using System;
 
-using NEP.Scoreworks.Core.Data;
+using NEP.ScoreLab.Core.Data;
 
-namespace NEP.Scoreworks.Core
+namespace NEP.ScoreLab.Core
 {
     public static class API
     {

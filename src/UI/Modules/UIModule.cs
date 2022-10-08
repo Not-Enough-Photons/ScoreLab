@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace NEP.Scoreworks.UI.Modules
+namespace NEP.ScoreLab.UI.Modules
 {
     [MelonLoader.RegisterTypeInIl2Cpp]
     public class UIModule : MonoBehaviour

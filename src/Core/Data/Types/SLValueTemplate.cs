@@ -1,8 +1,8 @@
-﻿namespace NEP.Scoreworks.Core.Data
+﻿namespace NEP.ScoreLab.Core.Data
 {
-    public class SWValueTemplate
+    public class SLValueTemplate
     {
-        public SWValueTemplate()
+        public SLValueTemplate()
         {
 
         }

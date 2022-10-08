@@ -7,7 +7,7 @@ using UnityEngine;
 
 using Newtonsoft.Json;
 
-namespace NEP.Scoreworks.Core
+namespace NEP.ScoreLab.Core
 {
     public class ScoreworksManager
     {

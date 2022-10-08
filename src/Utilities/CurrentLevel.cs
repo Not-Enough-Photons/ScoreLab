@@ -1,4 +1,4 @@
-﻿namespace NEP.Scoreworks.Utilities
+﻿namespace NEP.ScoreLab.Utilities
 {
     public enum CurrentLevel
     {

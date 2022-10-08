@@ -3,13 +3,13 @@ using System.Linq;
 
 using UnityEngine;
 
-using NEP.Scoreworks.Core;
-using NEP.Scoreworks.Core.Data;
-using NEP.Scoreworks.UI.Modules;
+using NEP.ScoreLab.Core;
+using NEP.ScoreLab.Core.Data;
+using NEP.ScoreLab.UI.Modules;
 
 using StressLevelZero.Rig;
 
-namespace NEP.Scoreworks.UI
+namespace NEP.ScoreLab.UI
 {
     [MelonLoader.RegisterTypeInIl2Cpp]
     public class UIManager : MonoBehaviour

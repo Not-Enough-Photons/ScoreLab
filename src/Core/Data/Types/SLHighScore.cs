@@ -1,6 +1,6 @@
-﻿namespace NEP.Scoreworks.Core.Data
+﻿namespace NEP.ScoreLab.Core.Data
 {
-    public class SWHighScore
+    public class SLHighScore
     {
         public string currentScene;
         public int highScore;

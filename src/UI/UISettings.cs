@@ -1,4 +1,4 @@
-﻿namespace NEP.Scoreworks.UI
+﻿namespace NEP.ScoreLab.UI
 {
     public class UISettings
     {

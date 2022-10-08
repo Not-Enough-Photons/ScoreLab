@@ -1,4 +1,4 @@
-﻿namespace NEP.Scoreworks.Core.Data
+﻿namespace NEP.ScoreLab.Core.Data
 {
     [System.Serializable]
     public class SWValue
@@ -6,7 +6,7 @@
         public SWValue(SWScoreType scoreType)
         {
             var dictionary = DataManager.scoreValues;
-            SWValueTemplate valueTemplate = dictionary[scoreType];
+            SLValueTemplate valueTemplate = dictionary[scoreType];
 
             this.scoreType = scoreType;
 
@@ -23,7 +23,7 @@
         public SWValue(SWMultiplierType multiplierType)
         {
             var dictionary = DataManager.multiplierValues;
-            SWValueTemplate valueTemplate = dictionary[multiplierType];
+            SLValueTemplate valueTemplate = dictionary[multiplierType];
 
             this.multiplierType = multiplierType;
 

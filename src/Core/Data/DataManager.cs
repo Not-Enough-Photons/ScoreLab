@@ -6,24 +6,24 @@ using UnityEngine;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace NEP.Scoreworks.Core.Data
+namespace NEP.ScoreLab.Core.Data
 {
     public static class DataManager
     {
-        public static Dictionary<SWScoreType, SWValueTemplate> scoreValues { get; private set; }
-        public static Dictionary<SWMultiplierType, SWValueTemplate> multiplierValues { get; private set; }
+        public static Dictionary<SWScoreType, SLValueTemplate> scoreValues { get; private set; }
+        public static Dictionary<SWMultiplierType, SLValueTemplate> multiplierValues { get; private set; }
 
-        public static Dictionary<string, SWHighScore> highScoreTable { get; private set; }
+        public static Dictionary<string, SLHighScore> highScoreTable { get; private set; }
 
-        public static string dir = MelonLoader.MelonUtils.UserDataDirectory + "/Scoreworks/";
+        public static string dir = MelonLoader.MelonUtils.UserDataDirectory + "/Not Enough Photons";
 
         public static void Initialize()
         {
-            highScoreTable = new Dictionary<string, SWHighScore>();
+            highScoreTable = new Dictionary<string, SLHighScore>();
 
             BuildScoreValues();
             BuildMultiplierValues();
-            LoadHighScoreTable(MelonLoader.MelonUtils.UserDataDirectory + "/Scoreworks/sw_highscores.json");
+            LoadHighScoreTable(dir + "/ScoreLab/sl_highscores.json");
         }
 
         // High Scores
@@ -36,7 +36,7 @@ namespace NEP.Scoreworks.Core.Data
             }
             else
             {
-                SWHighScore highScore = new SWHighScore()
+                SLHighScore highScore = new SLHighScore()
                 {
                     currentScene = currentScene,
                     highScore = score
@@ -47,10 +47,10 @@ namespace NEP.Scoreworks.Core.Data
 
             string serialized = JsonConvert.SerializeObject(highScoreTable, Formatting.Indented);
 
-            System.IO.File.WriteAllText(dir + "sw_highscores.json", serialized);
+            System.IO.File.WriteAllText(dir + "/ScoreLab/sl_highscores.json", serialized);
         }
 
-        public static SWHighScore RetrieveHighScore(string sceneName)
+        public static SLHighScore RetrieveHighScore(string sceneName)
         {
             return highScoreTable[sceneName];
         }
@@ -58,7 +58,7 @@ namespace NEP.Scoreworks.Core.Data
         public static void LoadHighScoreTable(string path)
         {
             string data = System.IO.File.ReadAllText(path);
-            highScoreTable = JsonConvert.DeserializeObject<Dictionary<string, SWHighScore>>(data);
+            highScoreTable = JsonConvert.DeserializeObject<Dictionary<string, SLHighScore>>(data);
         }
 
         public static void DeleteHighScore()
@@ -104,7 +104,7 @@ namespace NEP.Scoreworks.Core.Data
 
             string serialized = JsonConvert.SerializeObject(highScoreTable, Formatting.Indented);
 
-            System.IO.File.WriteAllText(MelonLoader.MelonUtils.UserDataDirectory + "/Scoreworks/sw_highscores.json", serialized);
+            System.IO.File.WriteAllText(dir + "/ScoreLab/sl_highscores.json", serialized);
 
             // so fucking hacky but it'll do for now
             UI.UIManager uiManager = GameObject.FindObjectOfType<UI.UIManager>();
@@ -119,38 +119,38 @@ namespace NEP.Scoreworks.Core.Data
 
         public static void BuildScoreValues()
         {
-            scoreValues = new Dictionary<SWScoreType, SWValueTemplate>();
+            scoreValues = new Dictionary<SWScoreType, SLValueTemplate>();
 
-            string path = dir + "sw_score_data.json";
+            string path = dir + "/ScoreLab/sl_score_data.json";
             string file = System.IO.File.ReadAllText(path);
 
-            var dictionary = JsonConvert.DeserializeObject<Dictionary<SWScoreType, SWValueTemplate>>(file);
+            var dictionary = JsonConvert.DeserializeObject<Dictionary<SWScoreType, SLValueTemplate>>(file);
 
             string[] enumNames = Enum.GetNames(typeof(SWScoreType));
 
             foreach (string name in enumNames)
             {
                 SWScoreType scoreType = (SWScoreType)Enum.Parse(typeof(SWScoreType), name);
-                SWValueTemplate template = dictionary[scoreType];
+                SLValueTemplate template = dictionary[scoreType];
                 scoreValues?.Add(scoreType, template);
             }
         }
 
         public static void BuildMultiplierValues()
         {
-            multiplierValues = new Dictionary<SWMultiplierType, SWValueTemplate>();
+            multiplierValues = new Dictionary<SWMultiplierType, SLValueTemplate>();
 
-            string path = dir + "/sw_mult_data.json";
+            string path = dir + "/ScoreLab/sl_mult_data.json";
             string file = System.IO.File.ReadAllText(path);
 
-            var dictionary = JsonConvert.DeserializeObject<Dictionary<SWMultiplierType, SWValueTemplate>>(file);
+            var dictionary = JsonConvert.DeserializeObject<Dictionary<SWMultiplierType, SLValueTemplate>>(file);
 
             string[] enumNames = Enum.GetNames(typeof(SWMultiplierType));
 
             foreach (string name in enumNames)
             {
                 Data.SWMultiplierType multType = (SWMultiplierType)Enum.Parse(typeof(SWMultiplierType), name);
-                Data.SWValueTemplate template = dictionary[multType];
+                Data.SLValueTemplate template = dictionary[multType];
                 multiplierValues?.Add(multType, template);
             }
         }
@@ -158,7 +158,7 @@ namespace NEP.Scoreworks.Core.Data
         // UI Data
         public static UI.UIPadding ReadPadding()
         {
-            string path = dir + "hud_settings.json";
+            string path = dir + "/ScoreLab/hud_settings.json";
             string file = System.IO.File.ReadAllText(path);
 
             var hudData = JObject.Parse(file);
@@ -226,7 +226,7 @@ namespace NEP.Scoreworks.Core.Data
 
         public static UI.UISettings ReadHUDSettings()
         {
-            string path = dir + "/hud_settings.json";
+            string path = dir + "/ScoreLab/hud_settings.json";
             string file = System.IO.File.ReadAllText(path);
 
             var hudData = JObject.Parse(file);
@@ -246,19 +246,19 @@ namespace NEP.Scoreworks.Core.Data
 
             var data = JsonConvert.SerializeObject(manager.hudSettings, Formatting.Indented);
 
-            System.IO.File.WriteAllText(dir + "hud_settings.json", data);
+            System.IO.File.WriteAllText(dir + "/ScoreLab/hud_settings.json", data);
         }
 
         public static string GetLastHUD()
         {
-            string path = dir + "sw_lasthud.txt";
+            string path = dir + "/ScoreLab/sw_lasthud.txt";
             string data = System.IO.File.ReadAllText(path);
             return data;
         }
 
         public static void SaveLastHUD(string hud)
         {
-            string path = dir + "sw_lasthud.txt";
+            string path = dir + "/ScoreLab/sw_lasthud.txt";
             System.IO.File.WriteAllText(path, hud);
         }
     }
