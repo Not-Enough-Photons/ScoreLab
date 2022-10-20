@@ -1,214 +1,157 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+using System;
+
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace NEP.ScoreLab.UI.Modules
+using TMPro;
+
+using NEP.ScoreLab.Core;
+using NEP.ScoreLab.Data;
+
+namespace NEP.ScoreLab.UI
 {
-    [MelonLoader.RegisterTypeInIl2Cpp]
     public class UIModule : MonoBehaviour
     {
-        public UIModule(System.IntPtr ptr) : base(ptr) { }
-        public Core.Data.SLValue refValue;
-
-        public UIModuleType moduleType;
-
-        public Text nameText;
-        public Text valueText;
-        public Text subValueText;
-        public Slider slider;
-
-        public List<UIModule> submodules;
-
-        public Animator anim;
-
-        public bool useDuration = true;
-        public float maxDuration = 1f;
-        private float _duration = 0f;
-
-        private float internal_delay = 0.25f;
-        private float t_internal_delay;
-
-        private void Awake()
+        public enum UIModuleType
         {
-            submodules = new List<UIModule>();
-
-            InitializeModule();
-            InitializeSubmodules();
+            Main,
+            Descriptor
         }
 
-        private void InitializeModule()
+        public Action OnModuleEnabled;
+        public Action OnModuleDisabled;
+        public Action OnModuleDecayed;
+        public Action OnModulePostDecayed;
+
+        public UIModuleType ModuleType;
+
+        public PackedValue PackedValue { get => _packedValue; }
+
+        public virtual bool CanDecay { get => transform.Find("-Persist") == null; }
+        public float DecayTime { get => _decayTime; }
+        public float PostDecayTime { get => _postDecayTime; }
+
+        protected TextMeshProUGUI _title { get; private set; }
+        protected TextMeshProUGUI _value { get; private set; }
+        protected Slider _timeBar { get; private set; }
+
+        protected PackedValue _packedValue { get; private set; }
+
+        protected bool _canDecay { get; private set; }
+        protected float _decayTime { get; private set; }
+        protected float _postDecayTime { get; private set; }
+
+        protected float _tDecay { get; private set; }
+        protected float _tPostDecay { get; private set; }
+
+        private string Path_Root => name;
+        protected virtual string Path_TitleText { get => "Title"; }
+        protected virtual string Path_ValueText { get => "Value"; }
+        protected virtual string Path_TimeBar { get => "TimeBar"; }
+
+        private bool _reachedDecay = false;
+        private bool _reachedPostDecay = false;
+
+        public virtual void OnModuleEnable() { OnModuleEnabled?.Invoke(); }
+
+        public virtual void OnModuleDisable() { OnModuleDisabled?.Invoke(); }
+
+        public virtual void OnUpdate() { }
+
+        public void AssignPackedData(PackedValue packedValue) => _packedValue = packedValue;
+
+        public void SetDecayTime(float decayTime)
         {
-            string moduleTypeName = "";
-
-            if (transform.name.StartsWith("Module"))
-            {
-                moduleTypeName = transform.name.Substring(7);
-            }
-
-            if (moduleTypeName == "Score")
-            {
-                moduleType = UIModuleType.Module_Score;
-            }
-            else if (moduleTypeName == "Multiplier")
-            {
-                moduleType = UIModuleType.Module_Multiplier;
-            }
-            else if (moduleTypeName == "HighScore")
-            {
-                moduleType = UIModuleType.Module_HighScore;
-            }
-
-            for (int i = 0; i < transform.childCount; i++)
-            {
-                Transform currentTransform = transform.GetChild(i);
-
-                if (currentTransform == null)
-                {
-                    continue;
-                }
-
-                string name = currentTransform.name;
-
-                if (name == "NameText")
-                {
-                    nameText = currentTransform.GetComponentInChildren<Text>();
-                }
-
-                if (name == "ValueText")
-                {
-                    valueText = currentTransform.GetComponentInChildren<Text>();
-                }
-
-                if (name == "SubValueText")
-                {
-                    subValueText = currentTransform.GetComponentInChildren<Text>();
-                }
-
-                slider = currentTransform.GetComponentInChildren<Slider>();
-
-                if (GetComponentInChildren<Animator>() != null)
-                {
-                    anim = GetComponentInChildren<Animator>();
-                }
-            }
-
-            useDuration = false;
+            this._decayTime = decayTime;
+            this._tDecay = this._decayTime;
         }
 
-        private void InitializeSubmodules()
+        public void SetPostDecayTime(float postDecayTime)
         {
-            Transform submoduleList = transform.Find("List");
+            this._postDecayTime = postDecayTime;
+            this._tPostDecay = this._postDecayTime;
+        }
 
-            if (submoduleList == null)
+        protected void SetText(TextMeshProUGUI text, string value)
+        {
+            if(text == null)
             {
                 return;
             }
 
-            for (int i = 0; i < submoduleList.childCount; i++)
+            text.text = value;
+        }
+
+        protected void SetBarValue(Slider timeBar, float value)
+        {
+            timeBar.value = value;
+        }
+
+        protected void SetMaxValueToBar(Slider timeBar, float value)
+        {
+            if(timeBar == null)
             {
-                Transform current = submoduleList.GetChild(i);
-                UIModule submodule = current.gameObject.AddComponent<UIModule>();
-
-                string name = current.name.Substring(10);
-
-                if (name == "Score")
-                {
-                    submodule.moduleType = UIModuleType.Module_Score;
-                }
-                else if (name == "Multiplier")
-                {
-                    submodule.moduleType = UIModuleType.Module_Multiplier;
-                }
-                else if (name == "HighScore")
-                {
-                    submodule.moduleType = UIModuleType.Module_HighScore;
-                }
-
-                if (GetComponent<Animator>() != null)
-                {
-                    anim = GetComponent<Animator>();
-                }
-
-                submodule.useDuration = true;
-
-                current.gameObject.SetActive(false);
-
-                submodules.Add(submodule);
+                return;
             }
+
+            timeBar.maxValue = value;
         }
 
-        private void OnEnable()
+        protected void UpdateDecay()
         {
-            _duration = 0f;
-            t_internal_delay = 0f;
-        }
-
-        private void OnDisable()
-        {
-            refValue = null;
-        }
-
-        private void Update()
-        {
-            if (useDuration)
+            if (!CanDecay)
             {
-                _duration += Time.deltaTime;
+                return;
+            }
 
-                if (slider != null)
+            if(_tDecay < 0f)
+            {
+                if (!_reachedDecay)
                 {
-                    slider.value -= Time.deltaTime;
+                    OnModuleDecayed?.Invoke();
+                    _reachedDecay = true;
                 }
 
-                if (_duration >= maxDuration)
+                _tPostDecay -= Time.deltaTime;
+
+                if (_tPostDecay < 0f)
                 {
-                    if (anim == null)
+                    if (!_reachedPostDecay)
                     {
-                        gameObject.SetActive(false);
+                        OnModulePostDecayed?.Invoke();
+                        _reachedPostDecay = true;
                     }
-                    else
-                    {
-                        anim.Play("Anim_FadeOut");
 
-                        t_internal_delay += Time.deltaTime;
+                    _tDecay = _decayTime;
+                    _tPostDecay = _postDecayTime;
 
-                        if (t_internal_delay >= internal_delay)
-                        {
-                            gameObject.SetActive(false);
-                        }
-                    }
+                    _reachedDecay = false;
+                    _reachedPostDecay = false;
+
+                    gameObject.SetActive(false);
+
+                    return;
                 }
+
+                return;
             }
+
+            _tDecay -= Time.deltaTime;
         }
 
-        public void SetDuration(float duration)
+        private void Awake()
         {
-            maxDuration = duration;
-            _duration = 0f;
+            Transform titleTran = transform.Find(Path_TitleText);
+            Transform valueTran = transform.Find(Path_ValueText);
+            Transform timeBarTran = transform.Find(Path_TimeBar);
+
+            _title = titleTran?.GetComponent<TextMeshProUGUI>();
+            _value = valueTran?.GetComponent<TextMeshProUGUI>();
+            _timeBar = timeBarTran?.GetComponent<Slider>();
         }
 
-        public void SetText(Text text, string value)
-        {
-            if (text != null)
-            {
-                text.text = value;
-            }
-        }
-
-        public void SetSlider(float value)
-        {
-            SetSlider(0f, value, value);
-        }
-
-        private void SetSlider(float min, float max, float value)
-        {
-            if (slider != null)
-            {
-                slider.minValue = min;
-                slider.maxValue = max;
-                slider.value = value;
-            }
-        }
+        private void OnEnable() => OnModuleEnable();
+        private void OnDisable() => OnModuleEnable();
+        private void Update() => OnUpdate();
     }
 }
-

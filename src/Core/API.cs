@@ -1,31 +1,48 @@
-﻿using System;
+using System;
 
-using NEP.ScoreLab.Core.Data;
+using NEP.ScoreLab.Data;
+using NEP.ScoreLab.UI;
 
 namespace NEP.ScoreLab.Core
 {
     public static class API
     {
-        public static Action<SLValue> OnScorePreAdded;
-        public static Action<SLValue> OnScoreAdded;
+        public static class Score
+        {
+            public static Action<PackedScore> OnScoreAdded;
+        }
 
-        public static Action<SLValue> OnScorePreRemoved;
-        public static Action<SLValue> OnScoreRemoved;
-        public static Action<SLValue> OnScoreLateRemoved;
+        public static class Multiplier
+        {
+            public static Action<PackedMultiplier> OnMultiplierAdded;
+            public static Action<PackedMultiplier> OnMultiplierRemoved;
 
-        public static Action<SLValue> OnMultiplierPreAdded;
-        public static Action<SLValue> OnMultiplierAdded;
+            public static Action<PackedMultiplier> OnMultiplierTimeBegin;
+            public static Action<PackedMultiplier> OnMultiplierTimeExpired;
+        }
 
-        public static Action<SLValue> OnMultiplierPreRemoved;
-        public static Action<SLValue> OnMultiplierRemoved;
-        public static Action<SLValue> OnMultiplierLateRemoved;
+        public static class HighScore
+        {
+            public static Action<PackedHighScore> OnHighScoreReached;
+            public static Action<PackedHighScore> OnHighScoreUpdated;
+            public static Action<PackedHighScore> OnHighScoreLoaded;
+            public static Action<PackedHighScore> OnHighScoreSaved;
+        }
 
-        public static Action<SLValue> OnScoreChanged;
-        public static Action<SLValue> OnMultiplierChanged;
+        public static class GameConditions
+        {
+            public static Func<bool> IsPlayerMoving = new Func<bool>(() => true);
+            public static Func<bool> IsPlayerInAir = new Func<bool>(() => Emulator._testCondition);
+        }
 
-        public static Action<SLValue> OnHighScoreReached;
+        public static class UI
+        {
+            public static Action<UIModule> OnModuleEnabled;
+            public static Action<UIModule> OnModuleDisabled;
 
-        public static Action<SLValue> OnScoreDuplicated;
-        public static Action<SLValue> OnMultiplierDuplicated;
+            public static Action<UIModule> OnModuleDecayed;
+            public static Action<UIModule> OnModulePostDecayed;
+        }
     }
 }
+
