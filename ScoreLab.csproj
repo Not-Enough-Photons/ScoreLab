@@ -10,6 +10,7 @@
     <RootNamespace>NEP.ScoreLab</RootNamespace>
     <AssemblyName>ScoreLab</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <LangVersion>10</LangVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
     <TargetFrameworkProfile />
@@ -35,27 +36,21 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="src\Audio\AudioManager.cs" />
     <Compile Include="src\Core\API.cs" />
-    <Compile Include="src\Core\Data\DataManager.cs" />
-    <Compile Include="src\Core\Data\Types\SLHighScore.cs" />
-    <Compile Include="src\Core\Data\Types\SLMultiplierType.cs" />
-    <Compile Include="src\Core\Data\Types\SLScoreType.cs" />
-    <Compile Include="src\Core\Data\Types\SLValue.cs" />
-    <Compile Include="src\Core\Data\Types\SLValueTemplate.cs" />
-    <Compile Include="src\Core\Data\Types\SLValueType.cs" />
-    <Compile Include="src\Core\Director.cs" />
-    <Compile Include="src\Core\ScoreLabManager.cs" />
+    <Compile Include="src\Core\ScoreTracker.cs" />
+    <Compile Include="src\Data\DataManager.cs" />
+    <Compile Include="src\Data\Packages\PackedHighScore.cs" />
+    <Compile Include="src\Data\Packages\PackedMultiplier.cs" />
+    <Compile Include="src\Data\Packages\PackedScore.cs" />
+    <Compile Include="src\Data\Packages\PackedValue.cs" />
     <Compile Include="src\Main.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="src\UI\Modules\UIModule.cs" />
+    <Compile Include="src\UI\Modules\UIModuleAnimator.cs" />
+    <Compile Include="src\UI\Modules\UIMultiplierModule.cs" />
+    <Compile Include="src\UI\Modules\UIScoreModule.cs" />
+    <Compile Include="src\UI\UIDescriptorList.cs" />
     <Compile Include="src\UI\UIManager.cs" />
-    <Compile Include="src\UI\UIModuleType.cs" />
-    <Compile Include="src\UI\UIPadding.cs" />
-    <Compile Include="src\UI\UIRegion.cs" />
-    <Compile Include="src\UI\UISettings.cs" />
-    <Compile Include="src\Utilities\CurrentLevel.cs" />
-    <Compile Include="src\Utilities\Utils.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="0Harmony, Version=2.9.0.0, Culture=neutral, processorArchitecture=MSIL">
@@ -124,6 +119,7 @@
       <HintPath>C:\Program Files (x86)\Steam\steamapps\common\BONELAB\MelonLoader\Managed\UnityEngine.UIModule.dll</HintPath>
     </Reference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>COPY "$(TargetPath)" "C:\Program Files (x86)\Steam\steamapps\common\BONELAB\Mods"
