@@ -1,5 +1,3 @@
-using System;
-
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -12,6 +10,8 @@ namespace NEP.ScoreLab.UI
 {
     public class UIModule : MonoBehaviour
     {
+        public UIModule(System.IntPtr ptr) : base(ptr) { }
+
         public enum UIModuleType
         {
             Main,
