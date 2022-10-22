@@ -41,9 +41,54 @@ namespace NEP.ScoreLab.Data
 
         public static class PackedValues
         {
+            public static PackedScore[] Scores { get; private set; }
+            public static PackedMultiplier[] Multipliers { get; private set; }
+
+            static string[] _scoreFiles;
+            static string[] _multiplierFiles;
+
             public static void Init()
             {
+                Scores = GetScores();
+                Multipliers = GetMultipliers();
+            }
 
+            private static PackedScore[] GetScores()
+            {
+                _scoreFiles = LoadAllFiles(Path_ScoreData, ".json");
+                List<PackedScore> scores = new List<PackedScore>();
+
+                foreach (var file in _scoreFiles)
+                {
+                    scores.Add(ReadScoreData(file));
+                }
+
+                return scores.ToArray();
+            }
+
+            private static PackedMultiplier[] GetMultipliers()
+            {
+                _multiplierFiles = LoadAllFiles(Path_MultiplierData, ".json");
+                List<PackedMultiplier> multipliers = new List<PackedMultiplier>();
+
+                foreach (var file in _multiplierFiles)
+                {
+                    multipliers.Add(ReadMultiplierData(file));
+                }
+
+                return multipliers.ToArray();
+            }
+
+            private static PackedScore ReadScoreData(string file)
+            {
+                var data = File.ReadAllText(file);
+                return JsonConvert.DeserializeObject<PackedScore>(data);
+            }
+
+            private static PackedMultiplier ReadMultiplierData(string file)
+            {
+                var data = File.ReadAllText(file);
+                return JsonConvert.DeserializeObject<PackedMultiplier>(data);
             }
         }
 
@@ -214,6 +259,22 @@ namespace NEP.ScoreLab.Data
         public static string[] LoadAllFiles(string path)
         {
             return Directory.GetFiles(path);
+        }
+
+        public static string[] LoadAllFiles(string path, string extensionFilter)
+        {
+            string[] files = LoadAllFiles(path);
+            List<string> filteredFiles = new List<string>();
+
+            foreach(string file in files)
+            {
+                if (file.EndsWith(extensionFilter))
+                {
+                    filteredFiles.Add(file);
+                }
+            }
+
+            return filteredFiles.ToArray();
         }
 
         private static void InitializeDirectories()
