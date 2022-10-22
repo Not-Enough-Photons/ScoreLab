@@ -43,8 +43,9 @@ namespace NEP.ScoreLab.Core
         }
 
         public void Add(PackedValue value) => value.OnValueCreated();
+        public void Add(string packedValue) => 
         public void Remove(PackedValue value) => value.OnValueRemoved();
-        public void UpdateValue(PackedValue value) => value.OnUpdate();
+        public void OnUpdateValue(PackedValue value) => value.OnUpdate();
 
         public void AddScore(int score) => _score += score;
         public void AddMultiplier(float multiplier) => _multiplier += multiplier;

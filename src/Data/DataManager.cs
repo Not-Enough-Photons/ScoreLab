@@ -2,7 +2,6 @@ using System.IO;
 using System.Collections.Generic;
 
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 using UnityEngine;
 
@@ -41,8 +40,11 @@ namespace NEP.ScoreLab.Data
 
         public static class PackedValues
         {
+            public static PackedValue[] Values { get; private set; }
             public static PackedScore[] Scores { get; private set; }
             public static PackedMultiplier[] Multipliers { get; private set; }
+
+            static List<PackedValue> _values;
 
             static string[] _scoreFiles;
             static string[] _multiplierFiles;
@@ -53,14 +55,28 @@ namespace NEP.ScoreLab.Data
                 Multipliers = GetMultipliers();
             }
 
+            public static void Find(string name)
+            {
+
+            }
+
+            public static void Find(string name, PackedValue.PackedType type)
+            {
+
+            }
+
             private static PackedScore[] GetScores()
             {
                 _scoreFiles = LoadAllFiles(Path_ScoreData, ".json");
+                _values = new List<PackedValue>();
                 List<PackedScore> scores = new List<PackedScore>();
 
                 foreach (var file in _scoreFiles)
                 {
-                    scores.Add(ReadScoreData(file));
+                    var data = ReadScoreData(file);
+
+                    _values.Add(data);
+                    scores.Add(data);
                 }
 
                 return scores.ToArray();
@@ -69,13 +85,18 @@ namespace NEP.ScoreLab.Data
             private static PackedMultiplier[] GetMultipliers()
             {
                 _multiplierFiles = LoadAllFiles(Path_MultiplierData, ".json");
+                List<PackedValue> values = new List<PackedValue>();
                 List<PackedMultiplier> multipliers = new List<PackedMultiplier>();
 
                 foreach (var file in _multiplierFiles)
                 {
-                    multipliers.Add(ReadMultiplierData(file));
+                    var data = ReadMultiplierData(file);
+
+                    _values.Add(data);
+                    multipliers.Add(data);
                 }
 
+                Values = _values.ToArray();
                 return multipliers.ToArray();
             }
 

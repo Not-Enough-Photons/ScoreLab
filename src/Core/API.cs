@@ -5,6 +5,9 @@ using NEP.ScoreLab.UI;
 
 namespace NEP.ScoreLab.Core
 {
+    /// <summary>
+    /// Class that contains listeners for ScoreLab events, game events, and more.
+    /// </summary>
     public static class API
     {
         public static class Score
