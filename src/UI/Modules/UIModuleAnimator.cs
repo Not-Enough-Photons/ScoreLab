@@ -19,13 +19,13 @@ namespace NEP.ScoreLab.UI
             _module = GetComponent<UIModule>();
             Animator = GetComponent<Animator>();
 
-            if(_module is UIScoreModule)
+            if(_module.TryCast<UIScoreModule>() != null)
             {
                 _module.OnModuleEnabled += _module.ModuleType == UIModule.UIModuleType.Main ? () => PlayAnimation("score_main_show") : () => PlayAnimation("score_descriptor_show");
                 _module.OnModuleDecayed += _module.ModuleType == UIModule.UIModuleType.Main ? () => PlayAnimation("score_main_hide") : () => PlayAnimation("score_descriptor_hide");
             }
             
-            if(_module is UIMultiplierModule)
+            if(_module.TryCast<UIMultiplierModule>() != null)
             {
                 _module.OnModuleEnabled += _module.ModuleType == UIModule.UIModuleType.Main ? () => PlayAnimation("mult_main_show") : () => PlayAnimation("mult_descriptor_show");
                 _module.OnModuleDecayed += _module.ModuleType == UIModule.UIModuleType.Main ? () => PlayAnimation("mult_main_hide") : () => PlayAnimation("mult_descriptor_hide");

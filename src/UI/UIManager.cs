@@ -24,6 +24,13 @@ namespace NEP.ScoreLab.UI
             API.Multiplier.OnMultiplierRemoved += (data) => UpdateModule(data, MultiplierModule);
         }
 
+        private void Start()
+        {
+            ScoreModule = transform.Find("Main_Score").GetComponent<UIModule>();
+            MultiplierModule = transform.Find("Main_Multiplier").GetComponent<UIModule>();
+            followTarget = BoneLib.Player.GetPlayerHead().transform;
+        }
+
         private void Update()
         {
             if(followTarget == null)

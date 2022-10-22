@@ -1,8 +1,8 @@
-﻿using System.Linq;
+﻿using MelonLoader;
+using BoneLib;
 
-using MelonLoader;
-
-using UnityEngine;
+using NEP.ScoreLab.Core;
+using NEP.ScoreLab.Data;
 
 namespace NEP.ScoreLab
 {
@@ -17,6 +17,23 @@ namespace NEP.ScoreLab
 
     public class Main : MelonMod
     {
+        public override void OnInitializeMelon()
+        {
+            Hooking.OnMarrowGameStarted += OnMarrowGameStarted;
+            Hooking.OnMarrowSceneLoaded += OnMarrowSceneLoaded;
+        }
 
+        public void OnMarrowGameStarted()
+        {
+            DataManager.Init();
+            ScoreDirector.Patches.InitPatches();
+
+            new ScoreTracker().Initialize();
+        }
+
+        public void OnMarrowSceneLoaded(MarrowSceneInfo sceneInfo)
+        {
+            DataManager.SpawnDefaultUI();
+        }
     }
 }

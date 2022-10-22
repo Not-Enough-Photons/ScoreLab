@@ -31,8 +31,9 @@ namespace NEP.ScoreLab.Core
 
         public static class GameConditions
         {
-            public static Func<bool> IsPlayerMoving = new Func<bool>(() => true);
-            public static Func<bool> IsPlayerInAir = new Func<bool>(() => Emulator._testCondition);
+            public static Func<bool> IsPlayerMoving = new Func<bool>(() => ScoreDirector.IsPlayerMoving);
+            public static Func<bool> IsPlayerInAir = new Func<bool>(() => ScoreDirector.IsPlayerInAir);
+            public static Func<bool> IsPlayerSeated = new Func<bool>(() => ScoreDirector.IsPlayerSeated);
         }
 
         public static class UI
