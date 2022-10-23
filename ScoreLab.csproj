@@ -40,6 +40,8 @@
     <Compile Include="src\Core\ScoreDirector.cs" />
     <Compile Include="src\Core\ScoreTracker.cs" />
     <Compile Include="src\Data\DataManager.cs" />
+    <Compile Include="src\Data\JSON\JSONMult.cs" />
+    <Compile Include="src\Data\JSON\JSONScore.cs" />
     <Compile Include="src\Data\Packages\EventType.cs" />
     <Compile Include="src\Data\Packages\PackedHighScore.cs" />
     <Compile Include="src\Data\Packages\PackedMultiplier.cs" />

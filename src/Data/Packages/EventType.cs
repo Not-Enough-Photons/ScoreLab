@@ -4,11 +4,16 @@ namespace NEP.ScoreLab.Data
     {
         public static readonly string None = "None";
 
-        // Scores
-        public static readonly string SCORE_KILL = "SCORE_KILL";
+        public static class Score
+        {
+            public static readonly string Kill = "SCORE_KILL";
+        }
 
-        // Multipliers
-        public static readonly string MULT_KILL = "MULT_KILL";
-        public static readonly string MULT_TEST = "MULT_TEST";
+        public static class Multiplier
+        {
+            public static readonly string Kill = "MULT_KILL";
+            public static readonly string Test = "MULT_TEST";
+            public static readonly string Seated = "MULT_SEATED";
+        }
     }
 }

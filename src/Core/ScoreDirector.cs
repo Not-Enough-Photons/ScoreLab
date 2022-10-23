@@ -19,7 +19,7 @@ namespace NEP.ScoreLab.Core
                 public static void Postfix(RigManager rM)
                 {
                     IsPlayerSeated = true;
-                    ScoreTracker.Instance.Add(new PackedMultiplier("SEATED", 1.25f, API.GameConditions.IsPlayerSeated));
+                    ScoreTracker.Instance.Add(new PackedMultiplier(EventType.Multiplier.Seated));
                 }
             }
 
@@ -40,7 +40,7 @@ namespace NEP.ScoreLab.Core
 
             public static void OnAIDeath(BehaviourBaseNav behaviour)
             {
-                ScoreTracker.Instance.Add(new PackedScore("KILL", 200));
+                ScoreTracker.Instance.Add(new PackedScore(EventType.Score.Kill));
             }
         }
 

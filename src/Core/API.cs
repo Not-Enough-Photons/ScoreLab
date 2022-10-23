@@ -38,7 +38,8 @@ namespace NEP.ScoreLab.Core
             private static Dictionary<string, Func<bool>> _conditionTable = new Dictionary<string, Func<bool>>()
             {
                 { "IsPlayerMoving", new Func<bool>(() => true) },
-                { "IsPlayerInAir", new Func<bool>(() => Emulator._testCondition) }
+                { "IsPlayerInAir", new Func<bool>(() => true) },
+                { "IsPlayerSeated", new Func<bool>(() => ScoreDirector.IsPlayerSeated) }
             };
 
             public static Func<bool> GetCondition(string cond)
