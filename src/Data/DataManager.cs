@@ -242,8 +242,9 @@ namespace NEP.ScoreLab.Data
 
                     foreach (var bundleObject in loadedObjects)
                     {
-                        if (bundleObject is GameObject go)
+                        if (bundleObject.TryCast<GameObject>() != null)
                         {
+                            var go = bundleObject.Cast<GameObject>();
                             bundleObject.hideFlags = HideFlags.DontUnloadUnusedAsset;
                             Melon<Main>.Logger.Msg($"[UI] - Added {bundleObject.name} to HUD list");
                             LoadedUIObjects.Add(go);
@@ -251,7 +252,7 @@ namespace NEP.ScoreLab.Data
                     }
                 }
 
-                Melon<Main>.Logger.Msg($"Done!");
+                Melon<Main>.Logger.Msg($"[UI] - Done!");
             }
 
             public static void LoadUINames()

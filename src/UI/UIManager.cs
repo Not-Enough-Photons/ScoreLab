@@ -18,6 +18,10 @@ namespace NEP.ScoreLab.UI
 
         private void Awake()
         {
+            ScoreModule = transform.Find("Main_Score").GetComponent<UIModule>();
+            MultiplierModule = transform.Find("Main_Multiplier").GetComponent<UIModule>();
+            followTarget = BoneLib.Player.GetPlayerHead().transform;
+
             API.Score.OnScoreAdded += (data) => UpdateModule(data, ScoreModule);
 
             API.Multiplier.OnMultiplierCloned += (data) => UpdateModule(data, MultiplierModule);
