@@ -10,7 +10,7 @@ namespace NEP.ScoreLab.Core
 
         public static ScoreTracker Instance { get; private set; }
 
-        public List<PackedMultiplier> ActiveMultipliers { get; set; }
+        public List<PackedValue> ActiveValues { get; private set; }
 
         public int Score
         {
@@ -24,33 +24,49 @@ namespace NEP.ScoreLab.Core
         private int _score = 0;
         private float _multiplier = 1f;
 
+        private float _baseMultiplier = 1f;
+
         public void Initialize()
         {
-            if(Instance == null)
+            if (Instance == null)
             {
                 Instance = this;
             }
 
-            ActiveMultipliers = new List<PackedMultiplier>();
+            ActiveValues = new List<PackedValue>();
         }
 
         public void Update()
         {
-            for(int i = 0; i < ActiveMultipliers.Count; i++)
+            for (int i = 0; i < ActiveValues.Count; i++)
             {
-                ActiveMultipliers[i].OnUpdate();
+                ActiveValues[i].OnUpdate();
             }
         }
 
         public void Add(PackedValue value) => value.OnValueCreated();
-        public void Add(string packedValue) => 
         public void Remove(PackedValue value) => value.OnValueRemoved();
-        public void OnUpdateValue(PackedValue value) => value.OnUpdate();
+        public void UpdateValue(PackedValue value) => value.OnUpdate();
 
-        public void AddScore(int score) => _score += score;
-        public void AddMultiplier(float multiplier) => _multiplier += multiplier;
-        public void RemoveMultiplier(float multiplier) => _multiplier -= multiplier;
+        public void AddScore(int score)
+        {
+            _score += score;
+        }
 
+        public void AddMultiplier(float multiplier)
+        {
+            _multiplier += multiplier;
+        }
+
+        public void RemoveMultiplier(float multiplier)
+        {
+            if (_multiplier < _baseMultiplier)
+            {
+                _multiplier = _baseMultiplier;
+            }
+
+            _multiplier -= multiplier;
+        }
     }
 }
 

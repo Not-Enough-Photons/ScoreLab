@@ -5,11 +5,8 @@ using NEP.ScoreLab.Data;
 
 namespace NEP.ScoreLab.UI
 {
-    [MelonLoader.RegisterTypeInIl2Cpp]
     public class UIManager : MonoBehaviour
     {
-        public UIManager(System.IntPtr ptr) : base(ptr) { }
-
         public UIModule ScoreModule;
         public UIModule MultiplierModule;
         public UIModule HighScoreModule;
@@ -20,20 +17,14 @@ namespace NEP.ScoreLab.UI
         {
             API.Score.OnScoreAdded += (data) => UpdateModule(data, ScoreModule);
 
+            API.Multiplier.OnMultiplierCloned += (data) => UpdateModule(data, MultiplierModule);
             API.Multiplier.OnMultiplierAdded += (data) => UpdateModule(data, MultiplierModule);
             API.Multiplier.OnMultiplierRemoved += (data) => UpdateModule(data, MultiplierModule);
         }
 
-        private void Start()
-        {
-            ScoreModule = transform.Find("Main_Score").GetComponent<UIModule>();
-            MultiplierModule = transform.Find("Main_Multiplier").GetComponent<UIModule>();
-            followTarget = BoneLib.Player.GetPlayerHead().transform;
-        }
-
         private void Update()
         {
-            if(followTarget == null)
+            if (followTarget == null)
             {
                 return;
             }
@@ -55,7 +46,7 @@ namespace NEP.ScoreLab.UI
 
         public void UpdateModule(PackedValue data, UIModule module)
         {
-            if(module == null)
+            if (module == null)
             {
                 return;
             }

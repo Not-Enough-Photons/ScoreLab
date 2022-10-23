@@ -5,11 +5,9 @@ using NEP.ScoreLab.Core;
 
 namespace NEP.ScoreLab.UI
 {
-    [MelonLoader.RegisterTypeInIl2Cpp]
+    [RequireComponent(typeof(Animator))]
     public class UIModuleAnimator : MonoBehaviour
     {
-        public UIModuleAnimator(System.IntPtr ptr) : base(ptr) { }
-
         public Animator Animator;
 
         private UIModule _module;
@@ -19,13 +17,13 @@ namespace NEP.ScoreLab.UI
             _module = GetComponent<UIModule>();
             Animator = GetComponent<Animator>();
 
-            if(_module.TryCast<UIScoreModule>() != null)
+            if (_module is UIScoreModule)
             {
                 _module.OnModuleEnabled += _module.ModuleType == UIModule.UIModuleType.Main ? () => PlayAnimation("score_main_show") : () => PlayAnimation("score_descriptor_show");
                 _module.OnModuleDecayed += _module.ModuleType == UIModule.UIModuleType.Main ? () => PlayAnimation("score_main_hide") : () => PlayAnimation("score_descriptor_hide");
             }
-            
-            if(_module.TryCast<UIMultiplierModule>() != null)
+
+            if (_module is UIMultiplierModule)
             {
                 _module.OnModuleEnabled += _module.ModuleType == UIModule.UIModuleType.Main ? () => PlayAnimation("mult_main_show") : () => PlayAnimation("mult_descriptor_show");
                 _module.OnModuleDecayed += _module.ModuleType == UIModule.UIModuleType.Main ? () => PlayAnimation("mult_main_hide") : () => PlayAnimation("mult_descriptor_hide");
@@ -34,11 +32,11 @@ namespace NEP.ScoreLab.UI
 
         private void PlayAnimation(string name)
         {
-            if(Animator == null)
+            if (Animator == null)
             {
                 return;
             }
-            
+
             Animator.Play(name);
         }
     }

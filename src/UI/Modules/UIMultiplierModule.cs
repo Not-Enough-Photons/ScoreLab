@@ -8,11 +8,8 @@ using NEP.ScoreLab.Data;
 
 namespace NEP.ScoreLab.UI
 {
-    [MelonLoader.RegisterTypeInIl2Cpp]
     public class UIMultiplierModule : UIModule
     {
-        public UIMultiplierModule(System.IntPtr ptr) : base(ptr) { }
-
         private PackedMultiplier _packedMultiplier { get => (PackedMultiplier)_packedValue; }
 
         public override void OnModuleEnable()
@@ -24,7 +21,7 @@ namespace NEP.ScoreLab.UI
                 return;
             }
 
-            if(_packedMultiplier == null)
+            if (_packedMultiplier == null)
             {
                 return;
             }
@@ -35,20 +32,20 @@ namespace NEP.ScoreLab.UI
             }
             else if (ModuleType == UIModuleType.Descriptor)
             {
-                SetText(_title, _packedMultiplier.name);
-                SetText(_value, _packedMultiplier.multiplier.ToString());
+                SetText(_title, _packedMultiplier.Name);
+                SetText(_value, $"{_packedMultiplier.Multiplier}");
             }
 
-            if(_timeBar != null)
+            if (_timeBar != null)
             {
-                if(_packedMultiplier.condition != null)
+                if (_packedMultiplier.Condition != null)
                 {
                     _timeBar.gameObject.SetActive(false);
                 }
                 else
                 {
                     _timeBar.gameObject.SetActive(true);
-                    SetMaxValueToBar(_timeBar, _packedMultiplier.timer);
+                    SetMaxValueToBar(_timeBar, _packedMultiplier.Timer);
                 }
             }
         }
@@ -60,9 +57,9 @@ namespace NEP.ScoreLab.UI
 
         public override void OnUpdate()
         {
-            if(_packedMultiplier != null)
+            if (_packedMultiplier != null)
             {
-                if(_packedMultiplier.condition != null)
+                if (_packedMultiplier.condition != null)
                 {
                     if (!_packedMultiplier.condition())
                     {
@@ -79,7 +76,7 @@ namespace NEP.ScoreLab.UI
                 UpdateDecay();
             }
 
-            if(_timeBar != null)
+            if (_timeBar != null)
             {
                 SetBarValue(_timeBar, _tDecay);
             }

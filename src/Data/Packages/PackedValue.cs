@@ -1,7 +1,7 @@
 namespace NEP.ScoreLab.Data
 {
     [System.Serializable]
-    public abstract class PackedValue
+    public class PackedValue
     {
         public enum PackedType
         {
@@ -12,16 +12,19 @@ namespace NEP.ScoreLab.Data
             Misc
         }
 
-        public PackedValue(string name)
+        public PackedValue()
         {
-            this.name = name;
+
         }
 
-        public string name;
-        public virtual PackedType packedType => PackedType.Base;
+        public string Name;
 
-        public abstract void OnValueCreated();
-        public abstract void OnValueRemoved();
+        public virtual PackedType PackedValueType => PackedType.Base;
+
+        public string eventType;
+
+        public virtual void OnValueCreated() { }
+        public virtual void OnValueRemoved() { }
 
         public virtual void OnUpdate() { }
         public virtual bool IsActive { get; }

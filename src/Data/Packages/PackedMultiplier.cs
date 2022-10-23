@@ -5,53 +5,56 @@ using NEP.ScoreLab.Core;
 
 namespace NEP.ScoreLab.Data
 {
-    [System.Serializable]
+    [Serializable]
     public class PackedMultiplier : PackedValue
     {
-        public PackedMultiplier(string name, float multiplier) : base(name)
+        public PackedMultiplier(string eventType, string name, float multiplier, float timer, string condition)
         {
-            this.name = name;
-            this.multiplier = multiplier;
-            _timed = false;
+            this.eventType = eventType;
+            Name = name;
+            Multiplier = multiplier;
+            Timer = timer;
+            Condition = condition;
         }
 
-        public PackedMultiplier(string name, float multiplier, float timer) : base(name)
+        public PackedMultiplier(string eventType)
         {
-            this.name = name;
-            this.multiplier = multiplier;
-            this.timer = timer;
-            _timed = true;
+            var data = (PackedMultiplier)DataManager.PackedValues.Get(eventType);
+
+            this.Name = data.Name;
+            this.Multiplier = data.Multiplier;
+            this.Timer = data.Timer;
+            this.Condition = data.Condition;
+            this.condition = API.GameConditions.GetCondition(data.Condition);
+            this.eventType = eventType;
+
+            if (Timer != 0f)
+            {
+                _timed = true;
+            }
         }
 
-        public PackedMultiplier(string name, float multiplier, Func<bool> condition) : base(name)
-        {
-            this.name = name;
-            this.multiplier = multiplier;
-            this.condition = condition;
-        }
-
-        public override PackedType packedType => PackedType.Multiplier;
-        public float multiplier;
-        public float timer;
-        public float elapsed;
-        public Func<bool> condition;
+        public override PackedType PackedValueType => PackedType.Multiplier;
+        public float Multiplier;
+        public float Timer;
+        public float Elapsed;
+        public string Condition;
+        public Func<bool> condition { get; }
 
         private bool _timed;
         private bool _timeBegin;
 
         public override void OnValueCreated()
         {
-            ScoreTracker.Instance.AddMultiplier(multiplier);
-            ScoreTracker.Instance.ActiveMultipliers.Add(this);
-
+            ScoreTracker.Instance.AddMultiplier(Multiplier);
+            ScoreTracker.Instance.ActiveValues.Add(this);
             API.Multiplier.OnMultiplierAdded?.Invoke(this);
         }
 
         public override void OnValueRemoved()
         {
-            ScoreTracker.Instance.RemoveMultiplier(multiplier);
-            ScoreTracker.Instance.ActiveMultipliers.Remove(this);
-
+            ScoreTracker.Instance.RemoveMultiplier(Multiplier);
+            ScoreTracker.Instance.ActiveValues.Remove(this);
             API.Multiplier.OnMultiplierRemoved?.Invoke(this);
         }
 
@@ -73,13 +76,13 @@ namespace NEP.ScoreLab.Data
                     _timeBegin = true;
                 }
 
-                elapsed += Time.deltaTime;
+                Elapsed += Time.deltaTime;
 
-                if (elapsed > timer)
+                if (Elapsed > Timer)
                 {
                     API.Multiplier.OnMultiplierTimeExpired?.Invoke(this);
                     ScoreTracker.Instance.Remove(this);
-                    elapsed = 0f;
+                    Elapsed = 0f;
                 }
             }
         }

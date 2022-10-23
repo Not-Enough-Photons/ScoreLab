@@ -12,8 +12,6 @@ namespace NEP.ScoreLab.UI
 {
     public class UIModule : MonoBehaviour
     {
-        public UIModule(System.IntPtr ptr) : base(ptr) { }
-
         public enum UIModuleType
         {
             Main,
@@ -28,6 +26,8 @@ namespace NEP.ScoreLab.UI
         public UIModuleType ModuleType;
 
         public PackedValue PackedValue { get => _packedValue; }
+
+        public virtual PackedValue.PackedType PackedType { get => PackedValue.PackedType.Base; }
 
         public virtual bool CanDecay { get => transform.Find("-Persist") == null; }
         public float DecayTime { get => _decayTime; }
@@ -76,7 +76,7 @@ namespace NEP.ScoreLab.UI
 
         protected void SetText(TextMeshProUGUI text, string value)
         {
-            if(text == null)
+            if (text == null)
             {
                 return;
             }
@@ -91,7 +91,7 @@ namespace NEP.ScoreLab.UI
 
         protected void SetMaxValueToBar(Slider timeBar, float value)
         {
-            if(timeBar == null)
+            if (timeBar == null)
             {
                 return;
             }
@@ -106,7 +106,7 @@ namespace NEP.ScoreLab.UI
                 return;
             }
 
-            if(_tDecay < 0f)
+            if (_tDecay < 0f)
             {
                 if (!_reachedDecay)
                 {

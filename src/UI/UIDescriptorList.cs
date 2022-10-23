@@ -7,11 +7,8 @@ using NEP.ScoreLab.Data;
 
 namespace NEP.ScoreLab.UI
 {
-    [MelonLoader.RegisterTypeInIl2Cpp]
     public class UIDescriptorList : MonoBehaviour
     {
-        public UIDescriptorList(System.IntPtr ptr) : base(ptr) { }
-
         public PackedValue.PackedType packedType;
 
         public GameObject modulePrefab { get; set; }
@@ -32,44 +29,37 @@ namespace NEP.ScoreLab.UI
             API.Multiplier.OnMultiplierRemoved += (data) => SetMultiplierModuleActive(data, false);
         }
 
-        public void PopulateList()
-        {
-            for (int i = 0; i < count; i++)
-            {
-                try
-                {
-                    var obj = GameObject.Instantiate(modulePrefab.gameObject, transform);
-                    var module = obj.GetComponent<UIModule>();
-
-                    module.ModuleType = UIModule.UIModuleType.Descriptor;
-                    modules.Add(module);
-                    obj.SetActive(false);
-                }
-                catch(System.NullReferenceException e)
-                {
-                    MelonLoader.MelonLogger.Error(e);
-                }
-            }
-        }
-
         public void SetPackedType(int packedType)
         {
             this.packedType = (PackedValue.PackedType)packedType;
         }
 
+        public void PopulateList()
+        {
+            for (int i = 0; i < count; i++)
+            {
+                var obj = GameObject.Instantiate(modulePrefab.gameObject, transform);
+                var module = obj.GetComponent<UIModule>();
+
+                module.ModuleType = UIModule.UIModuleType.Descriptor;
+                modules.Add(module);
+                obj.SetActive(false);
+            }
+        }
+
         public void SetScoreModuleActive(PackedScore packedValue)
         {
-            if(modules == null || modules.Count == 0)
+            if (modules == null || modules.Count == 0)
             {
                 return;
             }
 
-            if(packedValue.packedType != packedType)
+            if (packedValue.PackedValueType != packedType)
             {
                 return;
             }
 
-            for(int i = 0; i < modules.Count; i++)
+            for (int i = 0; i < modules.Count; i++)
             {
                 if (!modules[i].gameObject.activeInHierarchy)
                 {
@@ -93,7 +83,7 @@ namespace NEP.ScoreLab.UI
                 return;
             }
 
-            if (packedValue.packedType != packedType)
+            if (packedValue.PackedValueType != packedType)
             {
                 return;
             }
@@ -106,7 +96,7 @@ namespace NEP.ScoreLab.UI
 
                     multiplierModule.AssignPackedData(packedValue);
 
-                    multiplierModule.SetDecayTime(packedValue.timer);
+                    multiplierModule.SetDecayTime(packedValue.Timer);
                     multiplierModule.SetPostDecayTime(0.5f);
 
                     modules[i].gameObject.SetActive(active);
