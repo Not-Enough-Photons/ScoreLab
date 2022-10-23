@@ -27,7 +27,6 @@ namespace NEP.ScoreLab
         {
             DataManager.Init();
             ScoreDirector.Patches.InitPatches();
-
             new ScoreTracker().Initialize();
         }
 

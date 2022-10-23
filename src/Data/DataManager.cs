@@ -6,6 +6,8 @@ using Newtonsoft.Json.Linq;
 
 using UnityEngine;
 
+using MelonLoader;
+
 namespace NEP.ScoreLab.Data
 {
     public static class DataManager
@@ -16,6 +18,8 @@ namespace NEP.ScoreLab.Data
 
             public static void Init()
             {
+                Melon<Main>.Logger.Msg("[Bundle] - Initializing Bundle Manager");
+
                 Bundles = new List<AssetBundle>();
 
                 InitializeDirectories();
@@ -34,8 +38,11 @@ namespace NEP.ScoreLab.Data
                     }
 
                     AssetBundle bundle = AssetBundle.LoadFromFile(file);
+                    Melon<Main>.Logger.Msg($"[Bundle] - Adding {bundle.name}...");
                     Bundles.Add(bundle);
                 }
+
+                Melon<Main>.Logger.Msg("[Bundle] - Bundle loading success!");
             }
         }
 
@@ -50,9 +57,13 @@ namespace NEP.ScoreLab.Data
 
             public static void Init()
             {
+                Melon<Main>.Logger.Msg("[PackedValues] - Initializing Packed Value Manager");
+
                 Scores = GetScores();
                 Multipliers = GetMultipliers();
                 GetValues();
+
+                Melon<Main>.Logger.Msg($"[PackedValues] - Packed value initialization complete!");
             }
 
             public static PackedValue Get(string eventType)
@@ -71,6 +82,8 @@ namespace NEP.ScoreLab.Data
                     scores.Add(data);
                 }
 
+                Melon<Main>.Logger.Msg("[PackedValues] - Loaded all score files...");
+
                 return scores.ToArray();
             }
 
@@ -85,23 +98,37 @@ namespace NEP.ScoreLab.Data
                     multipliers.Add(data);
                 }
 
+                Melon<Main>.Logger.Msg("[PackedValues] - Loaded all multiplier files...");
+
                 return multipliers.ToArray();
             }
 
             private static void GetValues()
             {
+                if(Scores.Length == 0)
+                {
+                    Melon<Main>.Logger.Warning("[PackedValues] - Score data array is empty. Check your directories!");
+                }
+
+                if(Multipliers.Length == 0)
+                {
+                    Melon<Main>.Logger.Warning("[PackedValues] - Mult data array is empty. Check your directories!");
+                }
+
                 ValueTable = new Dictionary<string, PackedValue>();
 
                 foreach (var score in Scores)
                 {
                     var data = new PackedScore(score.EventType, score.Name, score.Score);
                     ValueTable.Add(score.EventType, data);
+                    Melon<Main>.Logger.Msg($"[PackedValues] - Added {data.eventType} to score list...");
                 }
 
                 foreach (var multiplier in Multipliers)
                 {
                     var data = new PackedMultiplier(multiplier.EventType, multiplier.Name, multiplier.Multiplier, multiplier.Timer, multiplier.Condition);
                     ValueTable.Add(multiplier.EventType, data);
+                    Melon<Main>.Logger.Msg($"[PackedValues] - Added {data.eventType} to multiplier list...");
                 }
             }
 
@@ -170,6 +197,8 @@ namespace NEP.ScoreLab.Data
         {
             public static void Init()
             {
+                Melon<Main>.Logger.Msg($"[UI] - Initalizing UI Data Manager");
+
                 LoadedUIObjects = new List<GameObject>();
                 UINames = new List<string>();
 
@@ -200,6 +229,8 @@ namespace NEP.ScoreLab.Data
 
             public static void LoadCustomUIs(List<AssetBundle> bundles)
             {
+                Melon<Main>.Logger.Msg($"[UI] - Loading custom UIs...");
+
                 if (bundles == null)
                 {
                     return;
@@ -214,10 +245,13 @@ namespace NEP.ScoreLab.Data
                         if (bundleObject is GameObject go)
                         {
                             bundleObject.hideFlags = HideFlags.DontUnloadUnusedAsset;
+                            Melon<Main>.Logger.Msg($"[UI] - Added {bundleObject.name} to HUD list");
                             LoadedUIObjects.Add(go);
                         }
                     }
                 }
+
+                Melon<Main>.Logger.Msg($"Done!");
             }
 
             public static void LoadUINames()
@@ -259,7 +293,7 @@ namespace NEP.ScoreLab.Data
             }
         }
 
-        static readonly string Path_UserData = Application.dataPath + "/Data/";
+        static readonly string Path_UserData = MelonUtils.UserDataDirectory + "/";
         static readonly string Path_Developer = Path_UserData + "Not Enough Photons/";
         static readonly string Path_Mod = Path_Developer + "ScoreLab/";
         static readonly string Path_CustomUIs = Path_Mod + "Custom UIs/";
@@ -274,12 +308,16 @@ namespace NEP.ScoreLab.Data
 
         public static void Init()
         {
+            Melon<Main>.Logger.Msg("[Data Manager] - Initializing Data Manager");
             InitializeDirectories();
+            Melon<Main>.Logger.Msg("[Data Manager] - Directories initialized");
 
             Bundle.Init();
             UI.Init();
             PackedValues.Init();
             //HighScore.Init();
+
+            Melon<Main>.Logger.Msg($"[Data Manager] - Initialization completed!");
         }
 
         public static string[] LoadAllFiles(string path)
