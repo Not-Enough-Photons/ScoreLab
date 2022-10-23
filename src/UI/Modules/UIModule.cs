@@ -10,8 +10,11 @@ using NEP.ScoreLab.Data;
 
 namespace NEP.ScoreLab.UI
 {
+    [MelonLoader.RegisterTypeInIl2Cpp]
     public class UIModule : MonoBehaviour
     {
+        public UIModule(System.IntPtr ptr) : base(ptr) { }
+
         public enum UIModuleType
         {
             Main,

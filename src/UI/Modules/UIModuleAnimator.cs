@@ -5,9 +5,11 @@ using NEP.ScoreLab.Core;
 
 namespace NEP.ScoreLab.UI
 {
-    [RequireComponent(typeof(Animator))]
+    [MelonLoader.RegisterTypeInIl2Cpp]
     public class UIModuleAnimator : MonoBehaviour
     {
+        public UIModuleAnimator(System.IntPtr ptr) : base(ptr) { }
+
         public Animator Animator;
 
         private UIModule _module;

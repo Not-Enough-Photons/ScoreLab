@@ -5,8 +5,11 @@ using NEP.ScoreLab.Data;
 
 namespace NEP.ScoreLab.UI
 {
+    [MelonLoader.RegisterTypeInIl2Cpp]
     public class UIManager : MonoBehaviour
     {
+        public UIManager(System.IntPtr ptr) : base(ptr) { }
+
         public UIModule ScoreModule;
         public UIModule MultiplierModule;
         public UIModule HighScoreModule;

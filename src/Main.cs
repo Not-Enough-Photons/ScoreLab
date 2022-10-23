@@ -33,7 +33,7 @@ namespace NEP.ScoreLab
 
         public void OnMarrowSceneLoaded(MarrowSceneInfo sceneInfo)
         {
-            DataManager.SpawnDefaultUI();
+            DataManager.UI.SpawnDefaultUI();
         }
     }
 }

@@ -7,8 +7,11 @@ using NEP.ScoreLab.Data;
 
 namespace NEP.ScoreLab.UI
 {
+    [MelonLoader.RegisterTypeInIl2Cpp]
     public class UIDescriptorList : MonoBehaviour
     {
+        public UIDescriptorList(System.IntPtr ptr) : base(ptr) { }
+
         public PackedValue.PackedType packedType;
 
         public GameObject modulePrefab { get; set; }

@@ -8,8 +8,11 @@ using TMPro;
 
 namespace NEP.ScoreLab.UI
 {
+    [MelonLoader.RegisterTypeInIl2Cpp]
     public class UIScoreModule : UIModule
     {
+        public UIScoreModule(System.IntPtr ptr) : base(ptr) { }
+
         private PackedScore _packedScore { get => (PackedScore)_packedValue; }
 
         public override void OnModuleEnable()

@@ -8,8 +8,11 @@ using NEP.ScoreLab.Data;
 
 namespace NEP.ScoreLab.UI
 {
+    [MelonLoader.RegisterTypeInIl2Cpp]
     public class UIMultiplierModule : UIModule
     {
+        public UIMultiplierModule(System.IntPtr ptr) : base(ptr) { }
+
         private PackedMultiplier _packedMultiplier { get => (PackedMultiplier)_packedValue; }
 
         public override void OnModuleEnable()
