@@ -22,6 +22,7 @@ namespace NEP.ScoreLab.UI
         private void Awake()
         {
             modules = new List<UIModule>();
+            //modulePrefab.hideFlags = HideFlags.DontUnloadUnusedAsset;
         }
 
         private void Start()
@@ -41,9 +42,9 @@ namespace NEP.ScoreLab.UI
             for (int i = 0; i < count; i++)
             {
                 var obj = GameObject.Instantiate(modulePrefab.gameObject, transform);
-                var module = obj.GetComponent<UIModule>();
-
                 obj.hideFlags = HideFlags.DontUnloadUnusedAsset;
+
+                var module = obj.GetComponent<UIModule>();
 
                 module.ModuleType = UIModule.UIModuleType.Descriptor;
                 modules.Add(module);
@@ -65,25 +66,23 @@ namespace NEP.ScoreLab.UI
 
             for (int i = 0; i < modules.Count; i++)
             {
-                UIScoreModule scoreModule = (UIScoreModule)modules[i];
-
                 if (!modules[i].gameObject.activeInHierarchy)
                 {
-                    scoreModule.AssignPackedData(packedValue);
+                    modules[i].AssignPackedData(packedValue);
 
-                    scoreModule.SetDecayTime(packedValue.DecayTime);
-                    scoreModule.SetPostDecayTime(0.5f);
+                    modules[i].SetDecayTime(packedValue.DecayTime);
+                    modules[i].SetPostDecayTime(0.5f);
 
                     modules[i].gameObject.SetActive(true);
                     return;
                 }
                 else
                 {
-                    if (scoreModule.PackedValue != null)
+                    if (modules[i].PackedValue != null)
                     {
-                        scoreModule.OnModuleEnable();
-                        scoreModule.SetDecayTime(packedValue.DecayTime);
-                        scoreModule.SetPostDecayTime(0.5f);
+                        modules[i].OnModuleEnable();
+                        modules[i].SetDecayTime(packedValue.DecayTime);
+                        modules[i].SetPostDecayTime(0.5f);
 
                         return;
                     }
@@ -105,25 +104,23 @@ namespace NEP.ScoreLab.UI
 
             for (int i = 0; i < modules.Count; i++)
             {
-                UIMultiplierModule multiplierModule = (UIMultiplierModule)modules[i];
-
                 if (!modules[i].gameObject.activeInHierarchy)
                 {
-                    multiplierModule.AssignPackedData(packedValue);
+                    modules[i].AssignPackedData(packedValue);
 
-                    multiplierModule.SetDecayTime(packedValue.DecayTime);
-                    multiplierModule.SetPostDecayTime(0.5f);
+                    modules[i].SetDecayTime(packedValue.DecayTime);
+                    modules[i].SetPostDecayTime(0.5f);
 
                     modules[i].gameObject.SetActive(true);
                     return;
                 }
                 else
                 {
-                    if (multiplierModule.PackedValue != null)
+                    if (modules[i].PackedValue != null)
                     {
-                        multiplierModule.OnModuleEnable();
-                        multiplierModule.SetDecayTime(packedValue.DecayTime);
-                        multiplierModule.SetPostDecayTime(0.5f);
+                        modules[i].OnModuleEnable();
+                        modules[i].SetDecayTime(packedValue.DecayTime);
+                        modules[i].SetPostDecayTime(0.5f);
 
                         return;
                     }

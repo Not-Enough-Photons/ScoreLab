@@ -1,6 +1,8 @@
 ﻿using MelonLoader;
 using BoneLib;
 
+using UnityEngine;
+
 using NEP.ScoreLab.Core;
 using NEP.ScoreLab.Data;
 
@@ -33,6 +35,18 @@ namespace NEP.ScoreLab
         public void OnMarrowSceneLoaded(MarrowSceneInfo sceneInfo)
         {
             DataManager.UI.SpawnDefaultUI();
+        }
+
+        public override void OnUpdate()
+        {
+            if (Input.GetKeyDown(KeyCode.Space))
+            {
+                ScoreTracker.Instance.Add(EventType.Score.Kill);
+            }
+            else if (Input.GetKeyDown(KeyCode.I))
+            {
+                DataManager.UI.SpawnDefaultUI();
+            }
         }
     }
 }

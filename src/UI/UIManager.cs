@@ -10,9 +10,9 @@ namespace NEP.ScoreLab.UI
     {
         public UIManager(System.IntPtr ptr) : base(ptr) { }
 
-        public UIModule ScoreModule;
-        public UIModule MultiplierModule;
-        public UIModule HighScoreModule;
+        public UIModule ScoreModule { get; set; }
+        public UIModule MultiplierModule { get; set; }
+        public UIModule HighScoreModule { get; set; }
 
         public Transform followTarget;
 
@@ -22,6 +22,14 @@ namespace NEP.ScoreLab.UI
 
             API.Multiplier.OnMultiplierAdded += (data) => UpdateModule(data, MultiplierModule);
             API.Multiplier.OnMultiplierRemoved += (data) => UpdateModule(data, MultiplierModule);
+        }
+
+        private void Start()
+        {
+            if(BoneLib.Player.GetPhysicsRig() != null)
+            {
+                followTarget = BoneLib.Player.GetPhysicsRig().m_chest;
+            }
         }
 
         private void Update()
@@ -46,9 +54,19 @@ namespace NEP.ScoreLab.UI
             }
         }
 
+        public void SetScoreModule(UIModule module)
+        {
+            this.ScoreModule = module;
+        }
+
+        public void SetMultiplierModule(UIModule module)
+        {
+            this.MultiplierModule = module;
+        }
+
         public void UpdateModule(PackedValue data, UIModule module)
         {
-            if (module == null)
+            if (module.WasCollected)
             {
                 return;
             }

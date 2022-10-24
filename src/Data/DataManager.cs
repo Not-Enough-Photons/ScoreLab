@@ -250,8 +250,7 @@ namespace NEP.ScoreLab.Data
 
             public static void SpawnUI(GameObject uiObject)
             {
-                GameObject createdUI = GameObject.Instantiate(uiObject);
-                createdUI.hideFlags = HideFlags.DontUnloadUnusedAsset;
+                GameObject.Instantiate(uiObject);
             }
 
             private static string GetHUDName(GameObject obj)
