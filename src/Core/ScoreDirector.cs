@@ -14,18 +14,18 @@ namespace NEP.ScoreLab.Core
         {
             [HarmonyLib.HarmonyPatch(typeof(Seat))]
             [HarmonyLib.HarmonyPatch(nameof(Seat.Register))]
-            public static class SeatPatch
+            public static class RegisterSeatPatch
             {
                 public static void Postfix(RigManager rM)
                 {
                     IsPlayerSeated = true;
-                    ScoreTracker.Instance.Add(new PackedMultiplier(EventType.Multiplier.Seated));
+                    ScoreTracker.Instance.Add(EventType.Mult.Test);
                 }
             }
 
             [HarmonyLib.HarmonyPatch(typeof(Seat))]
             [HarmonyLib.HarmonyPatch(nameof(Seat.DeRegister))]
-            public static class SeatPatch2
+            public static class DeRegisterSeatPatch
             {
                 public static void Postfix()
                 {
@@ -40,7 +40,8 @@ namespace NEP.ScoreLab.Core
 
             public static void OnAIDeath(BehaviourBaseNav behaviour)
             {
-                ScoreTracker.Instance.Add(new PackedScore(EventType.Score.Kill));
+                ScoreTracker.Instance.Add(EventType.Score.Kill);
+                ScoreTracker.Instance.Add(EventType.Mult.Kill);
             }
         }
 

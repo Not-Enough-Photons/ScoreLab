@@ -2,44 +2,51 @@ using System;
 
 using NEP.ScoreLab.Core;
 
-using NEP.ScoreLab.Data.Interfaces;
-
 namespace NEP.ScoreLab.Data
 {
     [Serializable]
-    public class PackedScore : PackedValue, ITimed
+    public class PackedScore : PackedValue
     {
-        public PackedScore(string eventType, string name, int score)
+        public PackedScore(string eventType, string name, int score, float decayTime = 10f)
         {
             this.eventType = eventType;
-            this.Name = name;
-            this.score = score;
+            Name = name;
+            Score = score;
+            DecayTime = decayTime;
+            AccumulatedScore = this.Score;
         }
 
-        public PackedScore(string eventType)
-        {
-            var data = (PackedScore)DataManager.PackedValues.Get(eventType);
-
-            this.Name = data.Name;
-            this.score = data.score;
-            this.eventType = eventType;
-        }
-
-        public float Timer { get; set; }
         public override PackedType PackedValueType => PackedType.Score;
-        public int score;
+        public int Score;
+        public int AccumulatedScore;
 
         public override void OnValueCreated()
         {
-            //UnityEngine.Debug.Log(ScoreTracker.Instance.CheckDuplicate(this));
-            ScoreTracker.Instance.ActiveValues.Add(this);
-            ScoreTracker.Instance.AddScore(score);
+            _tDecay = DecayTime;
+
             API.Score.OnScoreAdded?.Invoke(this);
         }
 
         public override void OnValueRemoved()
         {
-            return;
+            AccumulatedScore = Score;
+
+            API.Score.OnScoreRemoved?.Invoke(this);
+        }
+
+        public override void OnUpdate()
+        {
+            OnUpdateDecay();
+        }
+
+        public override void OnUpdateDecay()
+        {
+            if (_tDecay <= 0f)
+            {
+                ScoreTracker.Instance.Remove(this);
+            }
+
+            _tDecay -= UnityEngine.Time.deltaTime;
         }
     }
 }

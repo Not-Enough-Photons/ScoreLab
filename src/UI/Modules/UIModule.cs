@@ -13,7 +13,7 @@ namespace NEP.ScoreLab.UI
     [MelonLoader.RegisterTypeInIl2Cpp]
     public class UIModule : MonoBehaviour
     {
-        public UIModule(System.IntPtr ptr) : base(ptr) { }
+        public UIModule(IntPtr ptr) : base(ptr) { }
 
         public enum UIModuleType
         {
@@ -63,7 +63,15 @@ namespace NEP.ScoreLab.UI
 
         public virtual void OnUpdate() { }
 
-        public void AssignPackedData(PackedValue packedValue) => _packedValue = packedValue;
+        public void AssignPackedData(PackedValue packedValue)
+        {
+            _packedValue = packedValue;
+
+            if (_packedValue.DecayTime != 0f)
+            {
+                SetDecayTime(_packedValue.DecayTime);
+            }
+        }
 
         public void SetDecayTime(float decayTime)
         {

@@ -8,27 +8,18 @@ namespace NEP.ScoreLab.Data
     [Serializable]
     public class PackedMultiplier : PackedValue
     {
-        public PackedMultiplier(string eventType, string name, float multiplier, float timer, string condition)
+        public PackedMultiplier(string eventType, float decayTime, string name, float multiplier, string condition)
         {
             this.eventType = eventType;
             Name = name;
             Multiplier = multiplier;
-            Timer = timer;
+            AccumulatedMultiplier = Multiplier;
+            DecayTime = decayTime;
             Condition = condition;
-        }
+            Condition = condition;
+            this.condition = API.GameConditions.GetCondition(Condition);
 
-        public PackedMultiplier(string eventType)
-        {
-            var data = (PackedMultiplier)DataManager.PackedValues.Get(eventType);
-
-            this.Name = data.Name;
-            this.Multiplier = data.Multiplier;
-            this.Timer = data.Timer;
-            this.Condition = data.Condition;
-            this.condition = API.GameConditions.GetCondition(data.Condition);
-            this.eventType = eventType;
-
-            if (Timer != 0f)
+            if (DecayTime != 0f)
             {
                 _timed = true;
             }
@@ -36,8 +27,8 @@ namespace NEP.ScoreLab.Data
 
         public override PackedType PackedValueType => PackedType.Multiplier;
         public float Multiplier;
-        public float Timer;
-        public float Elapsed;
+        public float AccumulatedMultiplier;
+        public float Elapsed { get => _tDecay; }
         public string Condition;
         public Func<bool> condition { get; }
 
@@ -46,15 +37,16 @@ namespace NEP.ScoreLab.Data
 
         public override void OnValueCreated()
         {
-            ScoreTracker.Instance.AddMultiplier(Multiplier);
-            ScoreTracker.Instance.ActiveValues.Add(this);
+            _tDecay = DecayTime;
+
             API.Multiplier.OnMultiplierAdded?.Invoke(this);
         }
 
         public override void OnValueRemoved()
         {
-            ScoreTracker.Instance.RemoveMultiplier(Multiplier);
-            ScoreTracker.Instance.ActiveValues.Remove(this);
+            AccumulatedMultiplier = Multiplier;
+            _timeBegin = false;
+
             API.Multiplier.OnMultiplierRemoved?.Invoke(this);
         }
 
@@ -64,10 +56,15 @@ namespace NEP.ScoreLab.Data
             {
                 if (!condition())
                 {
-                    ScoreTracker.Instance.Remove(this);
+                    OnValueRemoved();
                 }
             }
 
+            OnUpdateDecay();
+        }
+
+        public override void OnUpdateDecay()
+        {
             if (_timed)
             {
                 if (!_timeBegin)
@@ -76,14 +73,14 @@ namespace NEP.ScoreLab.Data
                     _timeBegin = true;
                 }
 
-                Elapsed += Time.deltaTime;
-
-                if (Elapsed > Timer)
+                if (_tDecay <= 0f)
                 {
                     API.Multiplier.OnMultiplierTimeExpired?.Invoke(this);
+                    _tDecay = DecayTime;
                     ScoreTracker.Instance.Remove(this);
-                    Elapsed = 0f;
                 }
+
+                _tDecay -= Time.deltaTime;
             }
         }
     }

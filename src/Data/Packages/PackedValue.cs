@@ -12,10 +12,7 @@ namespace NEP.ScoreLab.Data
             Misc
         }
 
-        public PackedValue()
-        {
-
-        }
+        public PackedValue() { }
 
         public string Name;
 
@@ -23,11 +20,18 @@ namespace NEP.ScoreLab.Data
 
         public string eventType;
 
+        public float DecayTime;
+        public float PostDecayTime;
+
         public virtual void OnValueCreated() { }
         public virtual void OnValueRemoved() { }
 
         public virtual void OnUpdate() { }
+        public virtual void OnUpdateDecay() { }
+
         public virtual bool IsActive { get; }
+
+        protected float _tDecay;
     }
 }
 

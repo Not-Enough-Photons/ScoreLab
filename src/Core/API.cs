@@ -11,13 +11,15 @@ namespace NEP.ScoreLab.Core
         public static class Score
         {
             public static Action<PackedScore> OnScoreAdded;
+            public static Action<PackedScore> OnScoreRemoved;
 
-            public static Action<PackedScore> OnScoreCloned;
+            public static Action<int> OnScoreUpdated;
+            public static Action<int> OnScoreDifferenceUpdated;
+            public static Action<int> OnLastScoreUpdated;
         }
 
         public static class Multiplier
         {
-            public static Action<PackedMultiplier> OnMultiplierCloned;
             public static Action<PackedMultiplier> OnMultiplierAdded;
             public static Action<PackedMultiplier> OnMultiplierRemoved;
 
@@ -37,9 +39,8 @@ namespace NEP.ScoreLab.Core
         {
             private static Dictionary<string, Func<bool>> _conditionTable = new Dictionary<string, Func<bool>>()
             {
-                { "IsPlayerMoving", new Func<bool>(() => true) },
-                { "IsPlayerInAir", new Func<bool>(() => true) },
-                { "IsPlayerSeated", new Func<bool>(() => ScoreDirector.IsPlayerSeated) }
+                { "IsPlayerMoving", new Func<bool>(() => ScoreDirector.IsPlayerMoving) },
+                { "IsPlayerInAir", new Func<bool>(() => ScoreDirector.IsPlayerSeated) }
             };
 
             public static Func<bool> GetCondition(string cond)
