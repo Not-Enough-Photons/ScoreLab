@@ -2,10 +2,12 @@ using System;
 
 using NEP.ScoreLab.Core;
 
+using NEP.ScoreLab.Data.Interfaces;
+
 namespace NEP.ScoreLab.Data
 {
     [Serializable]
-    public class PackedScore : PackedValue
+    public class PackedScore : PackedValue, ITimed
     {
         public PackedScore(string eventType, string name, int score)
         {
@@ -23,6 +25,7 @@ namespace NEP.ScoreLab.Data
             this.eventType = eventType;
         }
 
+        public float Timer { get; set; }
         public override PackedType PackedValueType => PackedType.Score;
         public int score;
 

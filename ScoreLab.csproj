@@ -43,6 +43,7 @@
     <Compile Include="src\Data\JSON\JSONMult.cs" />
     <Compile Include="src\Data\JSON\JSONScore.cs" />
     <Compile Include="src\Data\Packages\EventType.cs" />
+    <Compile Include="src\Data\Packages\Interfaces\ITimed.cs" />
     <Compile Include="src\Data\Packages\PackedHighScore.cs" />
     <Compile Include="src\Data\Packages\PackedMultiplier.cs" />
     <Compile Include="src\Data\Packages\PackedScore.cs" />
