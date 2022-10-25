@@ -1,6 +1,7 @@
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
-using NEP.ScoreLab.Core;
 using NEP.ScoreLab.Data;
 
 namespace NEP.ScoreLab.UI
@@ -10,69 +11,55 @@ namespace NEP.ScoreLab.UI
     {
         public UIManager(System.IntPtr ptr) : base(ptr) { }
 
-        public UIModule ScoreModule { get; set; }
-        public UIModule MultiplierModule { get; set; }
-        public UIModule HighScoreModule { get; set; }
-
-        public Transform followTarget;
+        public List<UIController> LoadedUIs { get; private set; }
+        public UIController ActiveUI { get; private set; }
 
         private void Awake()
         {
-            API.Score.OnScoreAdded += (data) => UpdateModule(data, ScoreModule);
+            LoadedUIs = new List<UIController>();
 
-            API.Multiplier.OnMultiplierAdded += (data) => UpdateModule(data, MultiplierModule);
-            API.Multiplier.OnMultiplierRemoved += (data) => UpdateModule(data, MultiplierModule);
+            for(int i = 0; i < DataManager.UI.LoadedUIObjects.Count; i++)
+            {
+                var _object = GameObject.Instantiate(DataManager.UI.LoadedUIObjects[i]);
+                _object.name = _object.name.Remove(_object.name.Length - 7);
+
+                var controller = _object.GetComponent<UIController>();
+                LoadedUIs.Add(controller);
+                controller.SetParent(transform);
+                controller.gameObject.SetActive(false);
+            }
         }
 
         private void Start()
         {
-            if(BoneLib.Player.GetPhysicsRig() != null)
-            {
-                followTarget = BoneLib.Player.GetPhysicsRig().m_chest;
-            }
+            LoadHUD(DataManager.UI.DefaultUIName);
         }
 
-        private void Update()
+        public void LoadHUD(string name)
         {
-            if (followTarget == null)
+            UnloadHUD();
+
+            foreach(var _controller in LoadedUIs)
             {
-                return;
-            }
-
-            Vector3 move = Vector3.Lerp(transform.position, followTarget.position + followTarget.forward * 3f, 6f * Time.deltaTime);
-            Quaternion lookRot = Quaternion.LookRotation(followTarget.forward);
-
-            transform.position = move;
-            transform.rotation = lookRot;
-
-            for (int i = 0; i < transform.childCount; i++)
-            {
-                if (transform.GetChild(i) != null)
+                if(DataManager.UI.GetHUDName(_controller.gameObject) == name)
                 {
-                    //transform.GetChild(i).LookAt(followTarget);
+                    ActiveUI = _controller;
+                    break;
                 }
             }
+
+            ActiveUI.gameObject.SetActive(true);
+            ActiveUI.SetParent(null);
         }
 
-        public void SetScoreModule(UIModule module)
+        public void UnloadHUD()
         {
-            this.ScoreModule = module;
-        }
-
-        public void SetMultiplierModule(UIModule module)
-        {
-            this.MultiplierModule = module;
-        }
-
-        public void UpdateModule(PackedValue data, UIModule module)
-        {
-            if (module.WasCollected)
+            if(ActiveUI != null)
             {
-                return;
+                ActiveUI.SetParent(transform);
+                ActiveUI.gameObject.SetActive(false);
+                ActiveUI = null;
             }
-
-            module.AssignPackedData(data);
-            module.OnModuleEnable();
         }
     }
 }

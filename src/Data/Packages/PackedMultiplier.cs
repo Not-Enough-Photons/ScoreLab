@@ -56,7 +56,7 @@ namespace NEP.ScoreLab.Data
             {
                 if (!condition())
                 {
-                    OnValueRemoved();
+                    ScoreTracker.Instance.Remove(this);
                 }
             }
 

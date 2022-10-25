@@ -181,8 +181,8 @@ namespace NEP.ScoreLab.Data
 
             public static List<GameObject> LoadedUIObjects { get; private set; }
             public static List<string> UINames { get; private set; }
+            public static readonly string DefaultUIName = "Coda";
 
-            private static readonly string MainUIName = "Coda";
             private static readonly string Prefix_Hud = "[SLHUD] - ";
 
             public static GameObject GetObjectFromList(GameObject[] list, string query)
@@ -215,6 +215,7 @@ namespace NEP.ScoreLab.Data
                         {
                             var go = bundleObject.Cast<GameObject>();
                             go.hideFlags = HideFlags.DontUnloadUnusedAsset;
+
                             LoadedUIObjects.Add(go);
                         }
                     }
@@ -234,7 +235,7 @@ namespace NEP.ScoreLab.Data
 
             public static void SpawnDefaultUI()
             {
-                SpawnUI(MainUIName);
+                SpawnUI(DefaultUIName);
             }
 
             public static void SpawnUI(string name)
@@ -253,7 +254,7 @@ namespace NEP.ScoreLab.Data
                 GameObject.Instantiate(uiObject);
             }
 
-            private static string GetHUDName(GameObject obj)
+            public static string GetHUDName(GameObject obj)
             {
                 return obj.name.Substring(Prefix_Hud.Length);
             }

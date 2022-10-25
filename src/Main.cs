@@ -34,7 +34,7 @@ namespace NEP.ScoreLab
 
         public void OnMarrowSceneLoaded(MarrowSceneInfo sceneInfo)
         {
-            DataManager.UI.SpawnDefaultUI();
+            new GameObject("ScoreLab UI Manager").AddComponent<UI.UIManager>();
         }
 
         public override void OnUpdate()
@@ -47,6 +47,19 @@ namespace NEP.ScoreLab
             {
                 DataManager.UI.SpawnDefaultUI();
             }
+            else if (Input.GetKeyDown(KeyCode.L))
+            {
+                var warehouse = SLZ.Marrow.Warehouse.AssetWarehouse.Instance;
+                var barcode = new SLZ.Marrow.Warehouse.Barcode("fa534c5a83ee4ec6bd641fec424c4142.Level.LevelHalfwayPark");
+                warehouse.GetCrate(barcode).MainAsset.LoadSceneAsync(UnityEngine.SceneManagement.LoadSceneMode.Single, true, 0);
+            }
+
+            if (ScoreTracker.Instance == null)
+            {
+                return;
+            }
+
+            ScoreTracker.Instance.Update();
         }
     }
 }

@@ -65,6 +65,11 @@ namespace NEP.ScoreLab.UI
 
         public void AssignPackedData(PackedValue packedValue)
         {
+            if(packedValue == null)
+            {
+                return;
+            }
+
             _packedValue = packedValue;
 
             if (_packedValue.DecayTime != 0f)

@@ -107,7 +107,7 @@ namespace NEP.ScoreLab.Core
             else if (value.PackedValueType == PackedValue.PackedType.Multiplier)
             {
                 ActiveValues.Remove(value);
-                PackedMultiplier mult = value as PackedMultiplier;
+                PackedMultiplier mult = (PackedMultiplier)value;
                 RemoveMultiplier(mult.AccumulatedMultiplier);
 
                 value.OnValueRemoved();
