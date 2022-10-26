@@ -55,7 +55,7 @@ namespace NEP.ScoreLab.UI
                 return;
             }
 
-            Vector3 move = Vector3.Lerp(transform.position, followTarget.position + followTarget.forward * 3f, 6f * Time.deltaTime);
+            Vector3 move = Vector3.Lerp(transform.position, followTarget.position + followTarget.forward * 3f, 8f * Time.deltaTime);
             Quaternion lookRot = Quaternion.LookRotation(followTarget.forward);
 
             transform.position = move;

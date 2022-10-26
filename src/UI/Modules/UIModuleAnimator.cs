@@ -18,9 +18,18 @@ namespace NEP.ScoreLab.UI
         {
             _module = GetComponent<UIModule>();
             Animator = GetComponent<Animator>();
+        }
 
-            _module.OnModuleEnabled += _module.ModuleType == UIModule.UIModuleType.Main ? () => PlayAnimation("main_show") : () => PlayAnimation("descriptor_show");
-            _module.OnModuleDecayed += _module.ModuleType == UIModule.UIModuleType.Main ? () => PlayAnimation("main_hide") : () => PlayAnimation("descriptor_hide");
+        private void OnEnable()
+        {
+            API.UI.OnModuleEnabled += OnModuleEnabled;
+            API.UI.OnModuleDecayed += OnModuleDecayed;
+        }
+
+        private void OnDisable()
+        {
+            API.UI.OnModuleEnabled -= OnModuleEnabled;
+            API.UI.OnModuleDecayed -= OnModuleDecayed;
         }
 
         private void PlayAnimation(string name)
@@ -31,6 +40,40 @@ namespace NEP.ScoreLab.UI
             }
 
             Animator.Play(name);
+        }
+
+        private void OnModuleEnabled(UIModule module)
+        {
+            if (_module != module)
+            {
+                return;
+            }
+
+            if (module.ModuleType == UIModule.UIModuleType.Main)
+            {
+                PlayAnimation("main_show");
+            }
+            else
+            {
+                PlayAnimation("descriptor_show");
+            }
+        }
+
+        private void OnModuleDecayed(UIModule module)
+        {
+            if (_module != module)
+            {
+                return;
+            }
+
+            if (module.ModuleType == UIModule.UIModuleType.Main)
+            {
+                PlayAnimation("main_hide");
+            }
+            else
+            {
+                PlayAnimation("descriptor_hide");
+            }
         }
     }
 }

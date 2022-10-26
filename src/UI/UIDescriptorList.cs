@@ -12,6 +12,8 @@ namespace NEP.ScoreLab.UI
     {
         public UIDescriptorList(System.IntPtr ptr) : base(ptr) { }
 
+        public List<UIModule> ActiveModules;
+
         public PackedValue.PackedType packedType { get; set; }
         public GameObject modulePrefab { get; set; }
         public int count = 6;
@@ -21,8 +23,9 @@ namespace NEP.ScoreLab.UI
         private void Awake()
         {
             modules = new List<UIModule>();
+            ActiveModules = new List<UIModule>();
 
-            for(int i = 0; i < transform.childCount; i++)
+            for (int i = 0; i < transform.childCount; i++)
             {
                 var current = transform.GetChild(i);
                 var module = current.GetComponent<UIModule>();
@@ -34,12 +37,16 @@ namespace NEP.ScoreLab.UI
 
         private void OnEnable()
         {
+            API.UI.OnModulePostDecayed += (item) => ActiveModules.Remove(item);
+
             API.Score.OnScoreAdded += SetModuleActive;
             API.Multiplier.OnMultiplierAdded += SetModuleActive;
         }
 
         private void OnDisable()
         {
+            API.UI.OnModulePostDecayed -= (item) => ActiveModules.Remove(item);
+
             API.Score.OnScoreAdded -= SetModuleActive;
             API.Multiplier.OnMultiplierAdded -= SetModuleActive;
         }
@@ -51,36 +58,38 @@ namespace NEP.ScoreLab.UI
 
         public void SetModuleActive(PackedValue value)
         {
-            if(modules == null || modules.Count == 0)
+            if (modules == null || modules.Count == 0)
             {
                 return;
             }
 
-            if(value.PackedValueType != packedType)
+            if (value.PackedValueType != packedType)
             {
                 return;
             }
 
-            foreach(var module in modules)
+            foreach (var module in modules)
             {
-                if (!module.gameObject.activeInHierarchy)
+                if (!ActiveModules.Contains(module))
                 {
                     module.AssignPackedData(value);
 
                     module.SetDecayTime(value.DecayTime);
                     module.SetPostDecayTime(0.5f);
-
                     module.gameObject.SetActive(true);
 
-                    return;
+                    ActiveModules.Add(module);
+                    break;
                 }
                 else
                 {
-                    module.OnModuleEnable();
-                    module.SetDecayTime(value.DecayTime);
-                    module.SetPostDecayTime(0.5f);
-
-                    return;
+                    if (module.PackedValue.eventType == value.eventType)
+                    {
+                        module.OnModuleEnable();
+                        module.SetDecayTime(value.DecayTime);
+                        module.SetPostDecayTime(0.5f);
+                        break;
+                    }
                 }
             }
         }

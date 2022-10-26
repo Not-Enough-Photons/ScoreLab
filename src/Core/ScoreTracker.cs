@@ -67,13 +67,13 @@ namespace NEP.ScoreLab.Core
                 PackedScore score = (PackedScore)value;
                 AddScore(score.Score);
 
-                if (!CheckDuplicate(value))
+                if (ActiveValues.Contains(value))
                 {
-                    ActiveValues.Add(value);
+                    score.AccumulatedScore += score.Score;
                 }
                 else
                 {
-                    score.AccumulatedScore += score.Score;
+                    ActiveValues.Add(value);
                 }
 
                 value.OnValueCreated();
@@ -83,13 +83,13 @@ namespace NEP.ScoreLab.Core
                 PackedMultiplier mult = (PackedMultiplier)value;
                 AddMultiplier(mult.Multiplier);
 
-                if (!CheckDuplicate(value))
+                if (ActiveValues.Contains(value))
                 {
-                    ActiveValues.Add(value);
+                    mult.AccumulatedMultiplier += mult.Multiplier;
                 }
                 else
                 {
-                    mult.AccumulatedMultiplier += mult.Multiplier;
+                    ActiveValues.Add(value);
                 }
 
                 value.OnValueCreated();

@@ -49,9 +49,11 @@ namespace NEP.ScoreLab
             }
             else if (Input.GetKeyDown(KeyCode.L))
             {
-                var warehouse = SLZ.Marrow.Warehouse.AssetWarehouse.Instance;
-                var barcode = new SLZ.Marrow.Warehouse.Barcode("fa534c5a83ee4ec6bd641fec424c4142.Level.LevelHalfwayPark");
-                warehouse.GetCrate(barcode).MainAsset.LoadSceneAsync(UnityEngine.SceneManagement.LoadSceneMode.Single, true, 0);
+                ScoreTracker.Instance.Add(EventType.Mult.SecondWind);
+            }
+            else if (Input.GetKeyDown(KeyCode.G))
+            {
+                ScoreTracker.Instance.Add(EventType.Mult.Kill);
             }
 
             if (ScoreTracker.Instance == null)

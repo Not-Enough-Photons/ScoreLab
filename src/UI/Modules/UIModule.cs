@@ -21,11 +21,6 @@ namespace NEP.ScoreLab.UI
             Descriptor
         }
 
-        public Action OnModuleEnabled;
-        public Action OnModuleDisabled;
-        public Action OnModuleDecayed;
-        public Action OnModulePostDecayed;
-
         public UIModuleType ModuleType;
 
         public PackedValue PackedValue { get => _packedValue; }
@@ -57,9 +52,9 @@ namespace NEP.ScoreLab.UI
         private bool _reachedDecay = false;
         private bool _reachedPostDecay = false;
 
-        public virtual void OnModuleEnable() { OnModuleEnabled?.Invoke(); }
+        public virtual void OnModuleEnable() { API.UI.OnModuleEnabled?.Invoke(this); }
 
-        public virtual void OnModuleDisable() { OnModuleDisabled?.Invoke(); }
+        public virtual void OnModuleDisable() { API.UI.OnModuleDisabled?.Invoke(this); }
 
         public virtual void OnUpdate() { }
 
@@ -126,7 +121,7 @@ namespace NEP.ScoreLab.UI
             {
                 if (!_reachedDecay)
                 {
-                    OnModuleDecayed?.Invoke();
+                    API.UI.OnModuleDecayed?.Invoke(this);
                     _reachedDecay = true;
                 }
 
@@ -136,7 +131,7 @@ namespace NEP.ScoreLab.UI
                 {
                     if (!_reachedPostDecay)
                     {
-                        OnModulePostDecayed?.Invoke();
+                        API.UI.OnModulePostDecayed?.Invoke(this);
                         _reachedPostDecay = true;
                     }
 
