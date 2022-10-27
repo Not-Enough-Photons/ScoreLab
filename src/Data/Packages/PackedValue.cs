@@ -23,6 +23,8 @@ namespace NEP.ScoreLab.Data
         public float DecayTime;
         public float PostDecayTime;
 
+        public bool Stackable;
+
         public virtual void OnValueCreated() { }
         public virtual void OnValueRemoved() { }
 

@@ -32,7 +32,7 @@ namespace NEP.ScoreLab.UI
 
         private void Start()
         {
-            LoadHUD(DataManager.UI.DefaultUIName);
+            LoadHUD("Cruelty Squad");
         }
 
         public void LoadHUD(string name)

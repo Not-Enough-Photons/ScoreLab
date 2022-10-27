@@ -67,7 +67,7 @@ namespace NEP.ScoreLab.Core
                 PackedScore score = (PackedScore)value;
                 AddScore(score.Score);
 
-                if (ActiveValues.Contains(value))
+                if (ActiveValues.Contains(value) && value.Stackable)
                 {
                     score.AccumulatedScore += score.Score;
                 }
@@ -83,7 +83,7 @@ namespace NEP.ScoreLab.Core
                 PackedMultiplier mult = (PackedMultiplier)value;
                 AddMultiplier(mult.Multiplier);
 
-                if (ActiveValues.Contains(value))
+                if (ActiveValues.Contains(value) && value.Stackable)
                 {
                     mult.AccumulatedMultiplier += mult.Multiplier;
                 }

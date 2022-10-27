@@ -7,9 +7,16 @@ namespace NEP.ScoreLab.Data
     [Serializable]
     public class PackedScore : PackedValue
     {
-        public PackedScore(string eventType, string name, int score, float decayTime = 10f)
+        public PackedScore()
+        {
+
+        }
+
+        public PackedScore(string eventType, bool stackable = true, string name = "Default", int score = 0, float decayTime = 10f)
         {
             this.eventType = eventType;
+            Stackable = stackable;
+
             Name = name;
             Score = score;
             DecayTime = decayTime;

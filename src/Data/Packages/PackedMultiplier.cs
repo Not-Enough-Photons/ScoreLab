@@ -8,14 +8,25 @@ namespace NEP.ScoreLab.Data
     [Serializable]
     public class PackedMultiplier : PackedValue
     {
-        public PackedMultiplier(string eventType, float decayTime, string name, float multiplier, string condition)
+        public PackedMultiplier()
+        {
+            this.condition = API.GameConditions.GetCondition(Condition);
+
+            if (DecayTime != 0f)
+            {
+                _timed = true;
+            }
+        }
+
+        public PackedMultiplier(string eventType, bool stackable = true, string name = "Default", float multiplier = 1.0f, string condition = null, float decayTime = 10f)
         {
             this.eventType = eventType;
+            Stackable = stackable;
+
             Name = name;
             Multiplier = multiplier;
             AccumulatedMultiplier = Multiplier;
             DecayTime = decayTime;
-            Condition = condition;
             Condition = condition;
             this.condition = API.GameConditions.GetCondition(Condition);
 

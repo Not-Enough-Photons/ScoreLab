@@ -18,8 +18,15 @@ namespace NEP.ScoreLab.UI
 
         private void Awake()
         {
-            ScoreModule = transform.Find("Main_Score").GetComponent<UIScoreModule>();
-            MultiplierModule = transform.Find("Main_Multiplier").GetComponent<UIMultiplierModule>();
+            if(transform.Find("Main_Score") != null)
+            {
+                ScoreModule = transform.Find("Main_Score").GetComponent<UIScoreModule>();
+            }
+
+            if (transform.Find("Main_Multiplier"))
+            {
+                MultiplierModule = transform.Find("Main_Multiplier").GetComponent<UIMultiplierModule>();
+            }
         }
 
         private void OnEnable()
@@ -87,13 +94,15 @@ namespace NEP.ScoreLab.UI
 
         public void UpdateModule(PackedValue data, UIModule module)
         {
-            if (module.WasCollected)
+            try
             {
-                return;
+                module.AssignPackedData(data);
+                module.OnModuleEnable();
             }
+            catch
+            {
 
-            module.AssignPackedData(data);
-            module.OnModuleEnable();
+            }
         }
     }
 }

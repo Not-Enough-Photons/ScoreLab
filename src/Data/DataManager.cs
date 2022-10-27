@@ -94,13 +94,29 @@ namespace NEP.ScoreLab.Data
 
                 foreach (var score in Scores)
                 {
-                    var data = new PackedScore(score.EventType, score.Name, score.Score, score.DecayTime);
+                    var data = new PackedScore()
+                    {
+                        eventType = score.EventType,
+                        Stackable = score.Stackable,
+                        Name = score.Name,
+                        Score = score.Score,
+                        DecayTime = score.DecayTime
+                    };
+
                     ValueTable.Add(score.EventType, data);
                 }
 
                 foreach (var multiplier in Multipliers)
                 {
-                    var data = new PackedMultiplier(multiplier.EventType, multiplier.DecayTime, multiplier.Name, multiplier.Multiplier, multiplier.Condition);
+                    var data = new PackedMultiplier()
+                    {
+                        eventType = multiplier.EventType,
+                        Stackable = multiplier.Stackable,
+                        Name = multiplier.Name,
+                        Multiplier = multiplier.Multiplier,
+                        DecayTime = multiplier.DecayTime
+                    };
+
                     ValueTable.Add(multiplier.EventType, data);
                 }
             }
