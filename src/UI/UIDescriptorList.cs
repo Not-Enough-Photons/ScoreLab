@@ -40,7 +40,12 @@ namespace NEP.ScoreLab.UI
             API.UI.OnModulePostDecayed += (item) => ActiveModules.Remove(item);
 
             API.Score.OnScoreAdded += SetModuleActive;
+            API.Score.OnScoreAccumulated += SetModuleActive;
+            API.Score.OnScoreTierReached += SetModuleActive;
+
             API.Multiplier.OnMultiplierAdded += SetModuleActive;
+            API.Multiplier.OnMultiplierAccumulated += SetModuleActive;
+            API.Multiplier.OnMultiplierTierReached += SetModuleActive;
         }
 
         private void OnDisable()
@@ -48,7 +53,12 @@ namespace NEP.ScoreLab.UI
             API.UI.OnModulePostDecayed -= (item) => ActiveModules.Remove(item);
 
             API.Score.OnScoreAdded -= SetModuleActive;
+            API.Score.OnScoreAccumulated -= SetModuleActive;
+            API.Score.OnScoreTierReached -= SetModuleActive;
+
             API.Multiplier.OnMultiplierAdded -= SetModuleActive;
+            API.Multiplier.OnMultiplierAccumulated -= SetModuleActive;
+            API.Multiplier.OnMultiplierTierReached -= SetModuleActive;
         }
 
         public void SetPackedType(int packedType)
@@ -70,12 +80,12 @@ namespace NEP.ScoreLab.UI
 
             foreach (var module in modules)
             {
-                if (!ActiveModules.Contains(module))
+                if (!module.gameObject.activeInHierarchy)
                 {
                     module.AssignPackedData(value);
-
                     module.SetDecayTime(value.DecayTime);
                     module.SetPostDecayTime(0.5f);
+
                     module.gameObject.SetActive(true);
 
                     ActiveModules.Add(module);
@@ -83,12 +93,28 @@ namespace NEP.ScoreLab.UI
                 }
                 else
                 {
-                    if (module.PackedValue.eventType == value.eventType)
+                    if (ActiveModules.Contains(module))
                     {
-                        module.OnModuleEnable();
-                        module.SetDecayTime(value.DecayTime);
-                        module.SetPostDecayTime(0.5f);
-                        break;
+                        if (module.PackedValue.eventType == value.eventType)
+                        {
+                            if (value.Stackable)
+                            {
+                                module.AssignPackedData(value);
+                                module.OnModuleEnable();
+                                module.SetDecayTime(value.DecayTime);
+                                module.SetPostDecayTime(0.5f);
+                                break;
+                            }
+
+                            if (value.Tiers != null)
+                            {
+                                module.AssignPackedData(value);
+                                module.OnModuleEnable();
+                                module.SetDecayTime(value.DecayTime);
+                                module.SetPostDecayTime(0.5f);
+                                break;
+                            }
+                        }
                     }
                 }
             }

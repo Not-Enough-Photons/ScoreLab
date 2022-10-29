@@ -8,57 +8,34 @@ namespace NEP.ScoreLab.Data
     [Serializable]
     public class PackedMultiplier : PackedValue
     {
-        public PackedMultiplier()
-        {
-            this.condition = API.GameConditions.GetCondition(Condition);
-
-            if (DecayTime != 0f)
-            {
-                _timed = true;
-            }
-        }
-
-        public PackedMultiplier(string eventType, bool stackable = true, string name = "Default", float multiplier = 1.0f, string condition = null, float decayTime = 10f)
-        {
-            this.eventType = eventType;
-            Stackable = stackable;
-
-            Name = name;
-            Multiplier = multiplier;
-            AccumulatedMultiplier = Multiplier;
-            DecayTime = decayTime;
-            Condition = condition;
-            this.condition = API.GameConditions.GetCondition(Condition);
-
-            if (DecayTime != 0f)
-            {
-                _timed = true;
-            }
-        }
+        public PackedMultiplier() { }
 
         public override PackedType PackedValueType => PackedType.Multiplier;
         public float Multiplier;
         public float AccumulatedMultiplier;
         public float Elapsed { get => _tDecay; }
         public string Condition;
-        public Func<bool> condition { get; }
+        public Func<bool> condition { get; private set; }
 
         private bool _timed;
         private bool _timeBegin;
 
         public override void OnValueCreated()
         {
-            _tDecay = DecayTime;
+            if (DecayTime != 0f)
+            {
+                _timed = true;
+            }
 
-            API.Multiplier.OnMultiplierAdded?.Invoke(this);
+            condition = API.GameConditions.GetCondition(Condition);
+            AccumulatedMultiplier = Multiplier;
+            _tDecay = DecayTime;
         }
 
         public override void OnValueRemoved()
         {
-            AccumulatedMultiplier = Multiplier;
             _timeBegin = false;
-
-            API.Multiplier.OnMultiplierRemoved?.Invoke(this);
+            ResetTier();
         }
 
         public override void OnUpdate()

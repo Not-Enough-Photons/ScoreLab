@@ -95,6 +95,26 @@ namespace NEP.ScoreLab.UI
             text.text = value;
         }
 
+        protected void SetText(TextMeshProUGUI text, int value)
+        {
+            if (text == null)
+            {
+                return;
+            }
+
+            SetText(text, value.ToString());
+        }
+
+        protected void SetText(TextMeshProUGUI text, float value)
+        {
+            if (text == null)
+            {
+                return;
+            }
+
+            SetText(text, value.ToString());
+        }
+
         protected void SetBarValue(Slider timeBar, float value)
         {
             timeBar.value = value;

@@ -19,19 +19,35 @@ namespace NEP.ScoreLab.UI
         {
             base.OnModuleEnable();
 
+            if (_packedValue == null)
+            {
+                return;
+            }
+
             if (ModuleType == UIModuleType.Main)
             {
                 SetText(_value, ScoreTracker.Instance.Score.ToString());
             }
             else if (ModuleType == UIModuleType.Descriptor)
             {
-                if (_packedValue == null)
+                if (PackedValue.Stackable)
                 {
-                    return;
+                    if (PackedValue.TierEventType != null)
+                    {
+                        SetText(_title, _packedScore.Name);
+                        SetText(_value, _packedScore.Score);
+                    }
+                    else
+                    {
+                        SetText(_title, _packedScore.Name);
+                        SetText(_value, _packedScore.AccumulatedScore);
+                    }
                 }
-
-                SetText(_title, _packedScore.Name);
-                SetText(_value, _packedScore.AccumulatedScore.ToString());
+                else
+                {
+                    SetText(_title, _packedScore.Name);
+                    SetText(_value, _packedScore.Score);
+                }
             }
         }
 

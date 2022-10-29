@@ -7,21 +7,7 @@ namespace NEP.ScoreLab.Data
     [Serializable]
     public class PackedScore : PackedValue
     {
-        public PackedScore()
-        {
-
-        }
-
-        public PackedScore(string eventType, bool stackable = true, string name = "Default", int score = 0, float decayTime = 10f)
-        {
-            this.eventType = eventType;
-            Stackable = stackable;
-
-            Name = name;
-            Score = score;
-            DecayTime = decayTime;
-            AccumulatedScore = this.Score;
-        }
+        public PackedScore() { }
 
         public override PackedType PackedValueType => PackedType.Score;
         public int Score;
@@ -30,15 +16,12 @@ namespace NEP.ScoreLab.Data
         public override void OnValueCreated()
         {
             _tDecay = DecayTime;
-
-            API.Score.OnScoreAdded?.Invoke(this);
+            AccumulatedScore = Score;
         }
 
         public override void OnValueRemoved()
         {
-            AccumulatedScore = Score;
-
-            API.Score.OnScoreRemoved?.Invoke(this);
+            ResetTier();
         }
 
         public override void OnUpdate()

@@ -1,10 +1,10 @@
 ﻿using MelonLoader;
-using BoneLib;
 
 using UnityEngine;
 
 using NEP.ScoreLab.Core;
 using NEP.ScoreLab.Data;
+using NEP.ScoreLab.Patches;
 
 namespace NEP.ScoreLab
 {
@@ -19,10 +19,12 @@ namespace NEP.ScoreLab
 
     public class Main : MelonMod
     {
-        public override void OnInitializeMelon()
+        public override void OnLateInitializeMelon()
         {
-            Hooking.OnMarrowGameStarted += OnMarrowGameStarted;
-            Hooking.OnMarrowSceneLoaded += OnMarrowSceneLoaded;
+            Hooks.Initialize();
+
+            Hooks.Game.OnMarrowGameStarted += OnMarrowGameStarted;
+            Hooks.Game.OnMarrowSceneLoaded += OnMarrowSceneLoaded;
         }
 
         public void OnMarrowGameStarted()
@@ -34,29 +36,13 @@ namespace NEP.ScoreLab
 
         public void OnMarrowSceneLoaded(MarrowSceneInfo sceneInfo)
         {
-            new GameObject("ScoreLab UI Manager").AddComponent<UI.UIManager>();
+            new GameObject("[ScoreLab] - UI Manager").AddComponent<UI.UIManager>();
+            new GameObject("[ScoreLab] - Audio Manager").AddComponent<Audio.AudioManager>();
         }
 
         public override void OnUpdate()
         {
-            if (Input.GetKeyDown(KeyCode.Space))
-            {
-                ScoreTracker.Instance.Add(EventType.Score.Kill);
-            }
-            else if (Input.GetKeyDown(KeyCode.I))
-            {
-                DataManager.UI.SpawnDefaultUI();
-            }
-            else if (Input.GetKeyDown(KeyCode.L))
-            {
-                ScoreTracker.Instance.Add(EventType.Mult.SecondWind);
-            }
-            else if (Input.GetKeyDown(KeyCode.G))
-            {
-                ScoreTracker.Instance.Add(EventType.Mult.Kill);
-            }
-
-            if (ScoreTracker.Instance == null)
+            if(ScoreTracker.Instance == null)
             {
                 return;
             }

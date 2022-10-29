@@ -10,6 +10,48 @@ namespace NEP.ScoreLab.Data
 {
     public static class DataManager
     {
+        public static class Audio
+        {
+            public static List<AudioClip> Clips { get; private set; }
+
+            public static void Init()
+            {
+                Clips = new List<AudioClip>();
+                GetAudioClips();
+            }
+
+            public static void GetAudioClips()
+            {
+                foreach (var bundleAsset in Bundle.Bundles)
+                {
+                    var loadedObjects = bundleAsset.LoadAllAssets();
+
+                    foreach (var loadedAsset in loadedObjects)
+                    {
+                        if (loadedAsset.TryCast<AudioClip>() != null)
+                        {
+                            AudioClip clip = loadedAsset.Cast<AudioClip>();
+                            clip.hideFlags = HideFlags.DontUnloadUnusedAsset;
+                            Clips.Add(clip);
+                        }
+                    }
+                }
+            }
+
+            public static AudioClip GetClip(string nameQuery)
+            {
+                foreach (var clip in Clips)
+                {
+                    if (clip.name == nameQuery)
+                    {
+                        return clip;
+                    }
+                }
+
+                return null;
+            }
+        }
+
         public static class Bundle
         {
             public static List<AssetBundle> Bundles { get; private set; }
@@ -60,6 +102,42 @@ namespace NEP.ScoreLab.Data
                 return ValueTable[eventType];
             }
 
+            public static PackedScore GetScore(string eventType)
+            {
+                PackedScore value = (PackedScore)Get(eventType);
+                PackedScore score = new PackedScore()
+                {
+                    eventType = value.eventType,
+                    Stackable = value.Stackable,
+                    EventAudio = value.EventAudio,
+                    Name = value.Name,
+                    Score = value.Score,
+                    AccumulatedScore = value.Score,
+                    DecayTime = value.DecayTime,
+                    Tiers = value.Tiers
+                };
+
+                return score;
+            }
+
+            public static PackedMultiplier GetMultiplier(string eventType)
+            {
+                PackedMultiplier value = (PackedMultiplier)Get(eventType);
+                PackedMultiplier mult = new PackedMultiplier()
+                {
+                    eventType = value.eventType,
+                    Stackable = value.Stackable,
+                    EventAudio = value.EventAudio,
+                    Name = value.Name,
+                    Multiplier = value.Multiplier,
+                    DecayTime = value.DecayTime,
+                    Condition = value.Condition,
+                    Tiers = value.Tiers
+                };
+
+                return mult;
+            }
+
             private static JSONScore[] GetScores()
             {
                 _scoreFiles = LoadAllFiles(Path_ScoreData, ".json");
@@ -97,27 +175,87 @@ namespace NEP.ScoreLab.Data
                     var data = new PackedScore()
                     {
                         eventType = score.EventType,
+                        DecayTime = score.DecayTime,
                         Stackable = score.Stackable,
                         Name = score.Name,
                         Score = score.Score,
-                        DecayTime = score.DecayTime
+                        AccumulatedScore = score.Score
                     };
+
+                    if (score.Tiers != null)
+                    {
+                        if (score.Tiers.Length > 0)
+                        {
+                            List<PackedScore> tiers = new List<PackedScore>();
+
+                            foreach (var tier in score.Tiers)
+                            {
+                                var tierData = new PackedScore()
+                                {
+                                    eventType = score.EventType,
+                                    TierEventType = tier.TierEventType,
+                                    DecayTime = tier.DecayTime,
+                                    Stackable = tier.Stackable,
+                                    Name = tier.Name,
+                                    Score = tier.Score
+                                };
+
+                                if (tier.EventAudio != null)
+                                {
+                                    AudioClip clip = Audio.GetClip(tier.EventAudio);
+                                    tierData.EventAudio = clip;
+                                }
+
+                                tiers.Add(tierData);
+                            }
+
+                            data.Tiers = tiers.ToArray();
+                        }
+                    }
 
                     ValueTable.Add(score.EventType, data);
                 }
 
-                foreach (var multiplier in Multipliers)
+                foreach (var mult in Multipliers)
                 {
                     var data = new PackedMultiplier()
                     {
-                        eventType = multiplier.EventType,
-                        Stackable = multiplier.Stackable,
-                        Name = multiplier.Name,
-                        Multiplier = multiplier.Multiplier,
-                        DecayTime = multiplier.DecayTime
+                        eventType = mult.EventType,
+                        DecayTime = mult.DecayTime,
+                        Stackable = mult.Stackable,
+                        Name = mult.Name,
+                        Multiplier = mult.Multiplier,
+                        Condition = mult.Condition
                     };
 
-                    ValueTable.Add(multiplier.EventType, data);
+                    if (mult.Tiers != null)
+                    {
+                        if (mult.Tiers.Length > 0)
+                        {
+                            List<PackedMultiplier> tiers = new List<PackedMultiplier>();
+
+                            foreach (var tier in mult.Tiers)
+                            {
+
+                                var tierData = new PackedMultiplier()
+                                {
+                                    eventType = mult.EventType,
+                                    TierEventType = tier.TierEventType,
+                                    DecayTime = tier.DecayTime,
+                                    Stackable = tier.Stackable,
+                                    Name = tier.Name,
+                                    Multiplier = tier.Multiplier,
+                                    Condition = tier.Condition
+                                };
+
+                                tiers.Add(tierData);
+                            }
+
+                            data.Tiers = tiers.ToArray();
+                        }
+                    }
+
+                    ValueTable.Add(mult.EventType, data);
                 }
             }
 
@@ -295,6 +433,7 @@ namespace NEP.ScoreLab.Data
 
             Bundle.Init();
             UI.Init();
+            Audio.Init();
             PackedValues.Init();
             //HighScore.Init();
         }
