@@ -97,11 +97,8 @@ namespace NEP.ScoreLab.Core
                 {
                     ScoreTracker.Instance.Add(EventType.Score.EnemyMidAirKill);
                 }
-                else
-                {
-                    ScoreTracker.Instance.Add(EventType.Score.Kill);
-                }
 
+                ScoreTracker.Instance.Add(EventType.Score.Kill);
                 ScoreTracker.Instance.Add(EventType.Mult.Kill);
             }
         }

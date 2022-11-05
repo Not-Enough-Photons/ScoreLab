@@ -15,50 +15,33 @@ namespace NEP.ScoreLab.UI
         public List<UIModule> ActiveModules;
 
         public PackedValue.PackedType packedType { get; set; }
-        public GameObject modulePrefab { get; set; }
+        public GameObject ModulePrefab { get; set; }
         public int count = 6;
 
-        public List<UIModule> modules;
+        public List<UIModule> Modules;
 
         private void Awake()
         {
-            modules = new List<UIModule>();
+            Modules = new List<UIModule>();
             ActiveModules = new List<UIModule>();
-
-            for (int i = 0; i < transform.childCount; i++)
-            {
-                var current = transform.GetChild(i);
-                var module = current.GetComponent<UIModule>();
-
-                module.ModuleType = UIModule.UIModuleType.Descriptor;
-                modules.Add(module);
-            }
         }
 
         private void OnEnable()
         {
             API.UI.OnModulePostDecayed += (item) => ActiveModules.Remove(item);
 
-            API.Score.OnScoreAdded += SetModuleActive;
-            API.Score.OnScoreAccumulated += SetModuleActive;
-            API.Score.OnScoreTierReached += SetModuleActive;
-
-            API.Multiplier.OnMultiplierAdded += SetModuleActive;
-            API.Multiplier.OnMultiplierAccumulated += SetModuleActive;
-            API.Multiplier.OnMultiplierTierReached += SetModuleActive;
+            API.Value.OnValueAdded += SetModuleActive;
+            API.Value.OnValueAccumulated += SetModuleActive;
+            API.Value.OnValueTierReached += SetModuleActive;
         }
 
         private void OnDisable()
         {
             API.UI.OnModulePostDecayed -= (item) => ActiveModules.Remove(item);
 
-            API.Score.OnScoreAdded -= SetModuleActive;
-            API.Score.OnScoreAccumulated -= SetModuleActive;
-            API.Score.OnScoreTierReached -= SetModuleActive;
-
-            API.Multiplier.OnMultiplierAdded -= SetModuleActive;
-            API.Multiplier.OnMultiplierAccumulated -= SetModuleActive;
-            API.Multiplier.OnMultiplierTierReached -= SetModuleActive;
+            API.Value.OnValueAdded -= SetModuleActive;
+            API.Value.OnValueAccumulated -= SetModuleActive;
+            API.Value.OnValueTierReached -= SetModuleActive;
         }
 
         public void SetPackedType(int packedType)
@@ -68,7 +51,7 @@ namespace NEP.ScoreLab.UI
 
         public void SetModuleActive(PackedValue value)
         {
-            if (modules == null || modules.Count == 0)
+            if (Modules == null || Modules.Count == 0)
             {
                 return;
             }
@@ -78,7 +61,7 @@ namespace NEP.ScoreLab.UI
                 return;
             }
 
-            foreach (var module in modules)
+            foreach (var module in Modules)
             {
                 if (!module.gameObject.activeInHierarchy)
                 {
@@ -117,6 +100,22 @@ namespace NEP.ScoreLab.UI
                         }
                     }
                 }
+            }
+        }
+
+        public void PoolObjects()
+        {
+            if (ModulePrefab == null)
+            {
+                return;
+            }
+
+            for (int i = 0; i < count; i++)
+            {
+                var go = GameObject.Instantiate(ModulePrefab, transform);
+                var module = go.GetComponent<UIModule>();
+                module.ModuleType = UIModule.UIModuleType.Descriptor;
+                Modules.Add(module);
             }
         }
     }

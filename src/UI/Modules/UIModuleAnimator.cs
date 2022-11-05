@@ -11,6 +11,7 @@ namespace NEP.ScoreLab.UI
         public UIModuleAnimator(System.IntPtr ptr) : base(ptr) { }
 
         public Animator Animator;
+        public Animation Animation;
 
         private UIModule _module;
 
@@ -22,13 +23,15 @@ namespace NEP.ScoreLab.UI
 
         private void OnEnable()
         {
-            API.UI.OnModuleEnabled += OnModuleEnabled;
+            //API.UI.OnModuleEnabled += OnModuleEnabled;
+            API.Value.OnValueTierReached += (data) => OnTierReached();
             API.UI.OnModuleDecayed += OnModuleDecayed;
         }
 
         private void OnDisable()
         {
-            API.UI.OnModuleEnabled -= OnModuleEnabled;
+            //API.UI.OnModuleEnabled -= OnModuleEnabled;
+            API.Value.OnValueTierReached -= (data) => OnTierReached();
             API.UI.OnModuleDecayed -= OnModuleDecayed;
         }
 
@@ -49,14 +52,12 @@ namespace NEP.ScoreLab.UI
                 return;
             }
 
-            if (module.ModuleType == UIModule.UIModuleType.Main)
-            {
-                PlayAnimation("main_show");
-            }
-            else
-            {
-                PlayAnimation("descriptor_show");
-            }
+            PlayAnimation("show");
+        }
+
+        private void OnTierReached()
+        {
+            PlayAnimation("tier_reached");
         }
 
         private void OnModuleDecayed(UIModule module)
@@ -66,14 +67,7 @@ namespace NEP.ScoreLab.UI
                 return;
             }
 
-            if (module.ModuleType == UIModule.UIModuleType.Main)
-            {
-                PlayAnimation("main_hide");
-            }
-            else
-            {
-                PlayAnimation("descriptor_hide");
-            }
+            PlayAnimation("hide");
         }
     }
 }

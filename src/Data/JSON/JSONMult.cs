@@ -12,6 +12,8 @@ namespace NEP.ScoreLab.Data
         public float Multiplier;
         public string Condition;
 
+        public int TierRequirement;
+
         public JSONMult[] Tiers;
     }
 }

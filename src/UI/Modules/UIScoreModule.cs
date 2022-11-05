@@ -26,13 +26,20 @@ namespace NEP.ScoreLab.UI
 
             if (ModuleType == UIModuleType.Main)
             {
-                SetText(_value, ScoreTracker.Instance.Score.ToString());
+                if (_valueTween != null)
+                {
+                    _valueTween.SetValue(ScoreTracker.Instance.Score);
+                }
+                else
+                {
+                    SetText(_value, ScoreTracker.Instance.Score);
+                }
             }
             else if (ModuleType == UIModuleType.Descriptor)
             {
                 if (PackedValue.Stackable)
                 {
-                    if (PackedValue.TierEventType != null)
+                    if(PackedValue.TierEventType != null)
                     {
                         SetText(_title, _packedScore.Name);
                         SetText(_value, _packedScore.Score);

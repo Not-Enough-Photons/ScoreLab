@@ -12,6 +12,8 @@ namespace NEP.ScoreLab.Data
         public string Name;
         public int Score;
 
+        public int TierRequirement;
+
         public JSONScore[] Tiers;
     }
 }

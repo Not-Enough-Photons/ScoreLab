@@ -57,6 +57,7 @@
     <Compile Include="src\UI\Modules\UIModuleAnimator.cs" />
     <Compile Include="src\UI\Modules\UIMultiplierModule.cs" />
     <Compile Include="src\UI\Modules\UIScoreModule.cs" />
+    <Compile Include="src\UI\Modules\UIValueTween.cs" />
     <Compile Include="src\UI\UIDescriptorList.cs" />
     <Compile Include="src\UI\UIController.cs" />
     <Compile Include="src\UI\UIManager.cs" />
@@ -69,6 +70,10 @@
     <Reference Include="Assembly-CSharp, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>C:\Program Files (x86)\Steam\steamapps\common\BONELAB\MelonLoader\Managed\Assembly-CSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="AudioImportLib, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>C:\Program Files (x86)\Steam\steamapps\common\BONELAB\Mods\AudioImportLib.dll</HintPath>
     </Reference>
     <Reference Include="BoneLib, Version=1.2.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>

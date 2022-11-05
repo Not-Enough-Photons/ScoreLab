@@ -14,6 +14,9 @@ namespace NEP.ScoreLab.UI
         public UIModule MultiplierModule { get; set; }
         public UIModule HighScoreModule { get; set; }
 
+        public float Distance = 1f;
+        public float Lerp = 24f;
+
         public Transform followTarget;
 
         private void Awake()
@@ -33,22 +36,16 @@ namespace NEP.ScoreLab.UI
         {
             UpdateModule(null, ScoreModule);
 
-            API.Score.OnScoreAdded += (data) => UpdateModule(data, ScoreModule);
-            API.Score.OnScoreTierReached += (data) => UpdateModule(data, ScoreModule);
-
-            API.Multiplier.OnMultiplierAdded += (data) => UpdateModule(data, MultiplierModule);
-            API.Multiplier.OnMultiplierTierReached += (data) => UpdateModule(data, MultiplierModule);
-            API.Multiplier.OnMultiplierRemoved += (data) => UpdateModule(data, MultiplierModule);
+            API.Value.OnValueAdded += (data) => UpdateModule(data, ScoreModule);
+            API.Value.OnValueTierReached += (data) => UpdateModule(data, ScoreModule);
+            API.Value.OnValueAccumulated += (data) => UpdateModule(data, ScoreModule);
         }
 
         private void OnDisable()
         {
-            API.Score.OnScoreAdded -= (data) => UpdateModule(data, ScoreModule);
-            API.Score.OnScoreTierReached -= (data) => UpdateModule(data, ScoreModule);
-
-            API.Multiplier.OnMultiplierAdded -= (data) => UpdateModule(data, MultiplierModule);
-            API.Multiplier.OnMultiplierTierReached -= (data) => UpdateModule(data, MultiplierModule);
-            API.Multiplier.OnMultiplierRemoved -= (data) => UpdateModule(data, MultiplierModule);
+            API.Value.OnValueAdded -= (data) => UpdateModule(data, ScoreModule);
+            API.Value.OnValueTierReached -= (data) => UpdateModule(data, ScoreModule);
+            API.Value.OnValueAccumulated -= (data) => UpdateModule(data, ScoreModule);
         }
 
         private void Start()
@@ -58,15 +55,16 @@ namespace NEP.ScoreLab.UI
                 followTarget = BoneLib.Player.GetPhysicsRig().m_chest;
             }
         }
-
-        private void Update()
+        
+        // For being attached to a physical point on the body
+        private void FixedUpdate()
         {
             if (followTarget == null)
             {
                 return;
             }
 
-            Vector3 move = Vector3.Lerp(transform.position, followTarget.position + followTarget.forward * 3f, 8f * Time.deltaTime);
+            Vector3 move = Vector3.Lerp(transform.position, followTarget.position + followTarget.forward * Distance, Lerp * Time.deltaTime);
             Quaternion lookRot = Quaternion.LookRotation(followTarget.forward);
 
             transform.position = move;

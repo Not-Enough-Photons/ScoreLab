@@ -79,7 +79,7 @@ namespace NEP.ScoreLab.Core
 
                 value.OnValueRemoved();
 
-                API.Score.OnScoreRemoved?.Invoke((PackedScore)value);
+                API.Value.OnValueRemoved?.Invoke(value);
             }
             else if (value.PackedValueType == PackedValue.PackedType.Multiplier)
             {
@@ -89,7 +89,7 @@ namespace NEP.ScoreLab.Core
 
                 value.OnValueRemoved();
 
-                API.Multiplier.OnMultiplierRemoved?.Invoke((PackedMultiplier)value);
+                API.Value.OnValueRemoved?.Invoke(value);
             }
         }
 
@@ -141,19 +141,21 @@ namespace NEP.ScoreLab.Core
                 AddScore(score.Score);
                 ActiveValues.Add(score);
 
-                API.Score.OnScoreAdded?.Invoke(score);
+                API.Value.OnValueAdded?.Invoke(score);
                 return;
             }
 
             if (score.Tiers != null)
             {
-                var _scoreInList = GetClone<PackedScore>(score);
-                var _tier = (PackedScore)_scoreInList.CurrentTier;
+                var parent = GetClone<PackedScore>(score);
+                var currentTier = (PackedScore)parent.CurrentTier;
 
-                _scoreInList.SetDecayTime(_tier.DecayTime);
+                parent.ToNextTier();
+                parent.TierRequirement = currentTier.TierRequirement;
+                parent.SetDecayTime(currentTier.DecayTime);
 
-                AddScore(_tier.Score);
-                API.Score.OnScoreTierReached?.Invoke(_tier);
+                AddScore(currentTier.Score);
+
             }
             else if (score.Stackable)
             {
@@ -164,7 +166,7 @@ namespace NEP.ScoreLab.Core
                 _scoreInList.SetDecayTime(_scoreInList.DecayTime);
                 _scoreInList.AccumulatedScore += _scoreInList.Score;
 
-                API.Score.OnScoreAccumulated?.Invoke(_scoreInList);
+                API.Value.OnValueAccumulated?.Invoke(_scoreInList);
             }
             else
             {
@@ -173,7 +175,7 @@ namespace NEP.ScoreLab.Core
                 AddScore(copy.Score);
                 ActiveValues.Add(copy);
 
-                API.Score.OnScoreAdded?.Invoke(copy);
+                API.Value.OnValueAdded?.Invoke(copy);
             }
         }
 
@@ -190,19 +192,27 @@ namespace NEP.ScoreLab.Core
                 AddMultiplier(multiplier.Multiplier);
                 ActiveValues.Add(multiplier);
 
-                API.Multiplier.OnMultiplierAdded?.Invoke(multiplier);
+                API.Value.OnValueAdded?.Invoke(multiplier);
                 return;
             }
 
             if (multiplier.Tiers != null)
             {
                 var _multInList = GetClone<PackedMultiplier>(multiplier);
+                _multInList.ToNextTier();
+
+                if (_multInList.TierRequirementIndex <= _multInList.TierRequirement - 1)
+                {
+                    return;
+                }
+
                 var _tier = (PackedMultiplier)_multInList.CurrentTier;
+                _multInList.TierRequirement = _tier.TierRequirement;
 
                 _multInList.SetDecayTime(_tier.DecayTime);
 
-                AddMultiplier(multiplier.Multiplier);
-                API.Multiplier.OnMultiplierTierReached?.Invoke(_tier);
+                AddMultiplier(_tier.Multiplier);
+                API.Value.OnValueTierReached?.Invoke(_tier);
             }
             else if (multiplier.Stackable)
             {
@@ -213,7 +223,7 @@ namespace NEP.ScoreLab.Core
                 _multInList.SetDecayTime(_multInList.DecayTime);
                 _multInList.AccumulatedMultiplier += _multInList.Multiplier;
 
-                API.Multiplier.OnMultiplierAccumulated?.Invoke(_multInList);
+                API.Value.OnValueAccumulated?.Invoke(_multInList);
             }
             else
             {
@@ -222,7 +232,7 @@ namespace NEP.ScoreLab.Core
                 AddMultiplier(multiplier.Multiplier);
                 ActiveValues.Add(copy);
 
-                API.Multiplier.OnMultiplierAdded?.Invoke(copy);
+                API.Value.OnValueAdded?.Invoke(copy);
             }
         }
 
@@ -271,7 +281,8 @@ namespace NEP.ScoreLab.Core
                     Name = scoreEvent.Name,
                     Score = scoreEvent.Score,
                     EventAudio = scoreEvent.EventAudio,
-                    Tiers = scoreEvent.Tiers
+                    TierRequirement = scoreEvent.TierRequirement,
+                    Tiers = scoreEvent.Tiers,
                 };
 
                 return score;
@@ -289,6 +300,7 @@ namespace NEP.ScoreLab.Core
                     Multiplier = multEvent.Multiplier,
                     Condition = multEvent.Condition,
                     EventAudio = multEvent.EventAudio,
+                    TierRequirement = multEvent.TierRequirement,
                     Tiers = multEvent.Tiers
                 };
 
