@@ -20,11 +20,13 @@
 	<ItemGroup>
 	  <Compile Include="src\Audio\AudioManager.cs" />
 	  <Compile Include="src\Core\API.cs" />
+	  <Compile Include="src\Core\HighScoreDefinition.cs" />
 	  <Compile Include="src\Core\ScoreDirector.cs" />
 	  <Compile Include="src\Core\ScoreTracker.cs" />
 	  <Compile Include="src\Core\Settings.cs" />
 	  <Compile Include="src\Data\HUDLoader.cs" />
 	  <Compile Include="src\Data\JSON\JSONAudioParams.cs" />
+	  <Compile Include="src\Data\JSON\JSONHighScore.cs" />
 	  <Compile Include="src\Data\JSON\JSONHudManifest.cs" />
 	  <Compile Include="src\Data\JSON\JSONMult.cs" />
 	  <Compile Include="src\Data\JSON\JSONScore.cs" />
@@ -41,6 +43,7 @@
 	  <Compile Include="src\HUD\HUDShowMode.cs" />
 	  <Compile Include="src\HUD\HUDSpriteText.cs" />
 	  <Compile Include="src\HUD\HUDText.cs" />
+	  <Compile Include="src\HUD\Modules\HighScoreModule.cs" />
 	  <Compile Include="src\Main.cs" />
 	  <Compile Include="src\Menu\SLMenu.cs" />
 	  <Compile Include="src\Patches\Hooks.cs" />

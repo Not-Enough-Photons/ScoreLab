@@ -10,10 +10,15 @@ namespace NEP.ScoreLab.Core
     public static class ScoreTracker
     {
         public static List<PackedValue> ActiveValues { get; private set; }
-
+        
         public static int Score
         {
             get => _score;
+        }
+
+        public static int HighScore
+        {
+            get => _highScore;
         }
         public static int LastScore
         {
@@ -24,9 +29,24 @@ namespace NEP.ScoreLab.Core
             get => _multiplier;
         }
 
+        public static string Title
+        {
+            get
+            {
+                if (_title == string.Empty)
+                {
+                    return "Unknown";
+                }
+                
+                return _title;
+            }
+        }
+
         private static int _score = 0;
+        private static int _highScore = 0;
         private static int _lastScore = 0;
         private static float _multiplier = 1f;
+        private static string _title = string.Empty;
 
         private static float _baseMultiplier = 1f;
 
@@ -72,6 +92,10 @@ namespace NEP.ScoreLab.Core
             {
                 SetPackedMultiplier((PackedMultiplier)value);
             }
+            else if (value.PackedValueType == PackedValue.PackedType.HighScore)
+            {
+                SetPackedHighScore((PackedHighScore)value);
+            }
         }
 
         public static void Remove(PackedValue value)
@@ -101,6 +125,12 @@ namespace NEP.ScoreLab.Core
         {
             _lastScore = _score;
             _score += UnityEngine.Mathf.RoundToInt(score * _multiplier);
+
+            if (_score >= _highScore)
+            {
+                _highScore = _score;
+                Add(new PackedHighScore(_title, _highScore));
+            }
         }
 
         public static void AddMultiplier(float multiplier)
@@ -142,6 +172,12 @@ namespace NEP.ScoreLab.Core
             ActiveValues.Clear();
         }
 
+        public static void FetchHighScore(MarrowSceneInfo sceneInfo)
+        {
+            _title = sceneInfo.LevelTitle;
+            _highScore = 0;
+        }
+        
         public static void ResetHighScore()
         {
 
@@ -270,6 +306,17 @@ namespace NEP.ScoreLab.Core
 
                 API.Value.OnValueAdded?.Invoke(copy);
             }
+        }
+
+        private static void SetPackedHighScore(PackedHighScore highScore)
+        {
+            if (highScore == null)
+            {
+                return;
+            }
+            
+            InitializeValue(highScore);
+            API.Value.OnValueAdded?.Invoke(highScore);
         }
 
         private static PackedScore CopyFromScore(PackedScore original)

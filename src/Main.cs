@@ -19,7 +19,7 @@ namespace NEP.ScoreLab
         public const string Name = "ScoreLab";
         public const string Author = "Not Enough Photons";
         public const string Company = "Not Enough Photons";
-        public const string Version = "1.0.0";
+        public const string Version = "1.1.0";
         public const string DownloadLink = "https://thunderstore.io/c/bonelab/p/NotEnoughPhotons/ScoreLab";
     }
 
@@ -55,6 +55,7 @@ namespace NEP.ScoreLab
             HUDManager.Initialize();
             
             // TODO: Add high scores, and add an option to reset level progress
+            ScoreTracker.FetchHighScore(sceneInfo);
             ScoreTracker.ResetAll();
         }
 

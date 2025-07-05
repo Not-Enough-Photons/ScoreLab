@@ -33,6 +33,11 @@ namespace NEP.ScoreLab.HUD
             {
                 MultiplierModule = transform.Find("MainMultiplier").GetComponent<MultiplierModule>();
             }
+
+            if (transform.Find("MainHighScore"))
+            {
+                HighScoreModule = transform.Find("MainHighScore").GetComponent<HighScoreModule>();
+            }
         }
 
         private void OnEnable()
@@ -106,6 +111,11 @@ namespace NEP.ScoreLab.HUD
             {
                 MultiplierModule.AssignPackedData(data);
                 MultiplierModule.OnModuleEnable();
+            }
+            else if (data is PackedHighScore)
+            {
+                HighScoreModule.AssignPackedData(data);
+                HighScoreModule.OnModuleEnable();
             }
         }
     }

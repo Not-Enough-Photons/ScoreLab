@@ -2,22 +2,18 @@ namespace NEP.ScoreLab.Data
 {
     public class PackedHighScore : PackedValue
     {
-        public PackedHighScore(string name, int bestScore)
+        public PackedHighScore(string name, int score)
         {
-            this.bestScore = bestScore;
+            Name = name;
+            _score = score;
         }
 
         public override PackedType PackedValueType => PackedType.HighScore;
-        public int bestScore;
 
-        public override void OnValueCreated()
-        {
-
-        }
-
-        public override void OnValueRemoved()
-        {
-            return;
-        }
+        public int Score => _score <= 0 ? 0 : _score;
+        public string Barcode => _barcode;
+        
+        private int _score;
+        private string _barcode;
     }
 }

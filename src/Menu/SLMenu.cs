@@ -19,6 +19,7 @@ namespace NEP.ScoreLab.Menu
             #if DEBUG
             modPage.CreateFunction("Reload HUDs", Color.white, () => HUDLoader.ReloadHUDs());
             #endif
+            modPage.CreateBool("Audio", Color.white, Settings.UseAnnouncer, (value) => Settings.SetUseAnnouncer(value));
             modPage.CreateFloat("HUD Distance", Color.white, 1.125f, 0.025f, 0f, 2f,
                 (value) => Settings.DistanceToCamera = value);
             modPage.CreateEnum("Show HUD", Color.white, Settings.HUDShowMode, (value) => Settings.SetHUDShowMode((HUDShowMode)value));

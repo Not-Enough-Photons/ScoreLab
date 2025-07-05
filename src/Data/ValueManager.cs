@@ -2,6 +2,7 @@
 using NEP.ScoreLab.Core;
 using UnityEngine;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace NEP.ScoreLab.Data
 {
@@ -13,13 +14,14 @@ namespace NEP.ScoreLab.Data
         
         public static readonly string Path_Developer      = Path.Combine(MelonEnvironment.UserDataDirectory, "Not Enough Photons");
         public static readonly string Path_Mod            = Path.Combine(Path_Developer, "ScoreLab");
-        private static readonly string File_HighScores = Path.Combine(Path_Mod, "high_score_table.json");
+        private static readonly string File_HighScores    = Path.Combine(Path_Mod, "highscores.json");
 
         public static void Initialize()
         {
-            HighScoreTable = new Dictionary<string, int>();
             Packages = new Dictionary<string, ValuePackage>();
-            // HighScoreTable = ReadHighScore();
+            
+            HighScoreTable = ReadHighScores();
+            
             foreach (var manifest in HUDLoader.LoadedHUDManifests)
             {
                 JSONScore[] score = GetScoresForHUD(manifest.Name);
@@ -71,13 +73,39 @@ namespace NEP.ScoreLab.Data
             return null;
         }
 
-        public static Dictionary<string, int> ReadHighScore()
+        public static Dictionary<string, int> ReadHighScores()
         {
+            Dictionary<string, int> highScores = new Dictionary<string, int>();
             string directory = File_HighScores;
-            return JsonConvert.DeserializeObject(directory) as Dictionary<string, int>;
+
+            using (StreamReader sr = new StreamReader(directory))
+            {
+                using (JsonTextReader jsonReader = new JsonTextReader(sr))
+                {
+                    JObject data = JToken.ReadFrom(jsonReader) as JObject;
+
+                    if (data == null)
+                    {
+                        return null;
+                    }
+
+                    JArray array = data["highscores"] as JArray;
+
+                    for (int i = 0; i < array.Count; i++)
+                    {
+                        JObject entry = array[i].Value<JObject>();
+                        string name = entry["name"].Value<string>();
+                        int score = entry["score"].Value<int>();
+                        
+                        highScores.Add(name, score);
+                    }
+                }
+            }
+
+            return highScores;
         }
 
-        public static void WriteHighScore()
+        public static void WriteHighScores()
         {
             string directory = File_HighScores;
 
@@ -88,16 +116,33 @@ namespace NEP.ScoreLab.Data
                 return;
             }
 
-            var data = JsonConvert.SerializeObject(HighScoreTable);
-            File.WriteAllText(directory, data);
-        }
+            List<string> levels = new List<string>(HighScoreTable.Keys);
+            List<int> scores = new List<int>(HighScoreTable.Values);
 
-        public static void WriteBestScore(PackedHighScore highScore)
-        {
-            string sceneName = highScore.Name;
-            int bestScore = highScore.bestScore;
-
-            HighScoreTable.Add(sceneName, bestScore);
+            using (StreamWriter writer = new StreamWriter(directory))
+            {
+                using (JsonWriter jWriter = new JsonTextWriter(writer))
+                {
+                    jWriter.Formatting = Formatting.Indented;
+                    
+                    jWriter.WriteStartObject();
+                    
+                    jWriter.WritePropertyName("highscores");
+                    jWriter.WriteStartArray();
+                    for (int i = 0; i < levels.Count; i++)
+                    {
+                        jWriter.WriteStartObject();
+                        jWriter.WritePropertyName("name");
+                        jWriter.WriteValue(levels[i]);
+                        jWriter.WritePropertyName("score");
+                        jWriter.WriteValue(scores[i]);
+                        jWriter.WriteEndObject();
+                    }
+                    jWriter.WriteEndArray();
+                    
+                    jWriter.WriteEndObject();
+                }
+            }
         }
 
         private static JSONScore[] GetScoresForHUD(string name)

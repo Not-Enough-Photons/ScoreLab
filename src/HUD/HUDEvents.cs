@@ -15,17 +15,20 @@ namespace NEP.ScoreLab.HUD
 
         public Il2CppReferenceField<UltEventHolder> OnScoreUpdateEvent;
         public Il2CppReferenceField<UltEventHolder> OnMultiplierUpdateEvent;
+        public Il2CppReferenceField<UltEventHolder> OnHighScoreReached;
 
         private void Awake()
         {
             API.Value.OnValueAdded += OnScoreUpdateEvent_Callback;
             API.Value.OnValueAdded += OnMultiplierUpdateEvent_Callback;
+            API.HighScore.OnHighScoreReached += OnHighScoreReached_Callback;
         }
 
         private void OnDestroy()
         {
             API.Value.OnValueAdded -= OnScoreUpdateEvent_Callback;
             API.Value.OnValueAdded -= OnMultiplierUpdateEvent_Callback;
+            API.HighScore.OnHighScoreReached -= OnHighScoreReached_Callback;
         }
 
         [HideFromIl2Cpp]
@@ -43,6 +46,17 @@ namespace NEP.ScoreLab.HUD
         private void OnMultiplierUpdateEvent_Callback(PackedValue value)
         {
             if (value is not PackedMultiplier)
+            {
+                return;
+            }
+            
+            OnMultiplierUpdateEvent.Get()?.Invoke();
+        }
+
+        [HideFromIl2Cpp]
+        private void OnHighScoreReached_Callback(PackedValue value)
+        {
+            if (value is not PackedHighScore)
             {
                 return;
             }
