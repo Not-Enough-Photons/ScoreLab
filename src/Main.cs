@@ -54,7 +54,8 @@ namespace NEP.ScoreLab
         {
             HUDManager.Initialize();
             
-            // TODO: Add high scores, and add an option to reset level progress
+            // Write high scores
+            ValueManager.WriteHighScores();
             ScoreTracker.FetchHighScore(sceneInfo);
             ScoreTracker.ResetAll();
         }
@@ -63,6 +64,7 @@ namespace NEP.ScoreLab
 
         public override void OnDeinitializeMelon()
         {
+            ValueManager.WriteHighScores();
             HUDManager.Uninitialize();
             AudioManager.Uninitialize();
             Settings.Save();

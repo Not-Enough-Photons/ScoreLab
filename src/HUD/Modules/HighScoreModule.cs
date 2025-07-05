@@ -38,11 +38,6 @@ namespace NEP.ScoreLab.HUD
 
         public override void OnUpdate()
         {
-            if (ScoreTracker.Score < ScoreTracker.HighScore)
-            {
-                return;
-            }
-            
             UpdateDecay();
 
             if (ModuleType == UIModuleType.Main)
@@ -53,7 +48,8 @@ namespace NEP.ScoreLab.HUD
                 {
                     _currentValue = _targetValue;
                 }
-                
+              
+                SetText(_title, ScoreTracker.Title);
                 SetText(_value, _currentValue.ToString("N0"));
             }
         }

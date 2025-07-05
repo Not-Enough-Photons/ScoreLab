@@ -129,6 +129,7 @@ namespace NEP.ScoreLab.Core
             if (_score >= _highScore)
             {
                 _highScore = _score;
+                ValueManager.HighScoreTable[_title] = _highScore;
                 Add(new PackedHighScore(_title, _highScore));
             }
         }
@@ -174,8 +175,19 @@ namespace NEP.ScoreLab.Core
 
         public static void FetchHighScore(MarrowSceneInfo sceneInfo)
         {
+            var table = ValueManager.HighScoreTable;
+            
+            if (table.ContainsKey(sceneInfo.LevelTitle))
+            {
+                _highScore = table[sceneInfo.LevelTitle];
+            }
+            else
+            {
+                ValueManager.HighScoreTable.Add(sceneInfo.LevelTitle, 0);
+                _highScore = 0;
+            }
+            
             _title = sceneInfo.LevelTitle;
-            _highScore = 0;
         }
         
         public static void ResetHighScore()
