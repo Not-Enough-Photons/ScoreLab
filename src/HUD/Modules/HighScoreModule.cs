@@ -16,6 +16,15 @@ namespace NEP.ScoreLab.HUD
         private float _targetValue;
         private float _currentValue;
         private float _rate = 4f;
+
+        private HUDText _testGradeLetterText;
+        private string[] _letters =
+        {
+            "A",
+            "B",
+            "C",
+            "D"
+        };
         
         private void Awake()
         {
@@ -23,6 +32,8 @@ namespace NEP.ScoreLab.HUD
             {
                 ModuleType = UIModuleType.Descriptor;
             }
+            
+            _testGradeLetterText = transform.Find("Grade/Value").GetComponent<HUDText>();
         }
 
         public override void OnModuleEnable()
@@ -40,6 +51,29 @@ namespace NEP.ScoreLab.HUD
         {
             UpdateDecay();
 
+            // TODO: NOT release code
+            // Just testing the grade system to see what it'll look like
+            if (ScoreTracker.HighScore > 500 && ScoreTracker.HighScore < 1000)
+            {
+                SetText(_testGradeLetterText, _letters[3]);
+            }
+            else if (ScoreTracker.HighScore > 1000 && ScoreTracker.HighScore < 2000)
+            {
+                SetText(_testGradeLetterText, _letters[2]);
+            }
+            else if (ScoreTracker.HighScore > 2000 && ScoreTracker.HighScore < 3000)
+            {
+                SetText(_testGradeLetterText, _letters[1]);
+            }
+            else if (ScoreTracker.HighScore > 3000 && ScoreTracker.HighScore < 4000)
+            {
+                SetText(_testGradeLetterText, _letters[0]);
+            }
+            else
+            {
+                SetText(_testGradeLetterText, "F");
+            }
+            
             if (ModuleType == UIModuleType.Main)
             { 
                 SetTweenValue(ScoreTracker.HighScore);
