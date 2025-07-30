@@ -150,6 +150,11 @@ namespace NEP.ScoreLab.Core
                 _highScore = _score;
                 ValueManager.HighScoreTable[_title] = _highScore;
                 Add(new PackedHighScore(_title, _highScore));
+
+                if (_levelPar.grades == null)
+                {
+                    return;
+                }
                 
                 for (int i = 0; i < _levelPar.grades.Length; i++)
                 {
