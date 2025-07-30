@@ -57,6 +57,7 @@ namespace NEP.ScoreLab
             // Write high scores
             ValueManager.WriteHighScores();
             ScoreTracker.FetchHighScore(sceneInfo);
+            ScoreTracker.FetchLevelPar(sceneInfo);
             ScoreTracker.ResetAll();
         }
 

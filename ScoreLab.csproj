@@ -28,12 +28,14 @@
 	  <Compile Include="src\Data\JSON\JSONAudioParams.cs" />
 	  <Compile Include="src\Data\JSON\JSONHighScore.cs" />
 	  <Compile Include="src\Data\JSON\JSONHudManifest.cs" />
+	  <Compile Include="src\Data\JSON\JSONLevelScore.cs" />
 	  <Compile Include="src\Data\JSON\JSONMult.cs" />
 	  <Compile Include="src\Data\JSON\JSONScore.cs" />
 	  <Compile Include="src\Data\MarrowSceneInfo.cs" />
 	  <Compile Include="src\Data\Packages\EventType.cs" />
 	  <Compile Include="src\Data\Packages\PackedAudioParams.cs" />
 	  <Compile Include="src\Data\Packages\PackedHighScore.cs" />
+	  <Compile Include="src\Data\Packages\PackedPar.cs" />
 	  <Compile Include="src\Data\Packages\PackedMultiplier.cs" />
 	  <Compile Include="src\Data\Packages\PackedScore.cs" />
 	  <Compile Include="src\Data\Packages\PackedValue.cs" />

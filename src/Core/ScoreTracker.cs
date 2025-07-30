@@ -2,6 +2,7 @@
 using NEP.NEDebug.Console;
 #endif
 
+using Il2CppSLZ.Marrow.Warehouse;
 using NEP.ScoreLab.Data;
 using UnityEngine;
 
@@ -42,12 +43,30 @@ namespace NEP.ScoreLab.Core
             }
         }
 
+        public static JSONPar LevelPar
+        {
+            get
+            {
+                return _levelPar;
+            }
+        }
+
+        public static JSONPar.JSONGrade Grade
+        {
+            get
+            {
+                return _grade;
+            }
+        }
+
         private static int _score = 0;
         private static int _highScore = 0;
         private static int _lastScore = 0;
         private static float _multiplier = 1f;
         private static string _title = string.Empty;
-
+        private static JSONPar _levelPar;
+        private static JSONPar.JSONGrade _grade;
+        
         private static float _baseMultiplier = 1f;
 
         public static void Initialize()
@@ -131,6 +150,16 @@ namespace NEP.ScoreLab.Core
                 _highScore = _score;
                 ValueManager.HighScoreTable[_title] = _highScore;
                 Add(new PackedHighScore(_title, _highScore));
+                
+                for (int i = 0; i < _levelPar.grades.Length; i++)
+                {
+                    JSONPar.JSONGrade grade = _levelPar.grades[i];
+                
+                    if (_highScore >= grade.threshold)
+                    {
+                        _grade = grade;
+                    }
+                }
             }
         }
 
@@ -188,6 +217,20 @@ namespace NEP.ScoreLab.Core
             }
             
             _title = sceneInfo.LevelTitle;
+        }
+
+        public static void FetchLevelPar(MarrowSceneInfo sceneInfo)
+        {
+            var table = ValueManager.ParTable;
+
+            if (table.ContainsKey(sceneInfo.Barcode))
+            {
+                _levelPar = table[sceneInfo.Barcode];
+            }
+
+            _grade = new JSONPar.JSONGrade();
+            _grade.grade = "F";
+            _grade.threshold = 0;
         }
         
         public static void ResetHighScore()

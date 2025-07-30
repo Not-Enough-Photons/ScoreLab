@@ -51,28 +51,7 @@ namespace NEP.ScoreLab.HUD
         {
             UpdateDecay();
 
-            // TODO: NOT release code
-            // Just testing the grade system to see what it'll look like
-            if (ScoreTracker.HighScore > 500 && ScoreTracker.HighScore < 1000)
-            {
-                SetText(_testGradeLetterText, _letters[3]);
-            }
-            else if (ScoreTracker.HighScore > 1000 && ScoreTracker.HighScore < 2000)
-            {
-                SetText(_testGradeLetterText, _letters[2]);
-            }
-            else if (ScoreTracker.HighScore > 2000 && ScoreTracker.HighScore < 3000)
-            {
-                SetText(_testGradeLetterText, _letters[1]);
-            }
-            else if (ScoreTracker.HighScore > 3000 && ScoreTracker.HighScore < 4000)
-            {
-                SetText(_testGradeLetterText, _letters[0]);
-            }
-            else
-            {
-                SetText(_testGradeLetterText, "F");
-            }
+            SetText(_testGradeLetterText, ScoreTracker.Grade.grade);
             
             if (ModuleType == UIModuleType.Main)
             { 

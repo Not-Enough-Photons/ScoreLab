@@ -1,4 +1,5 @@
-﻿using MelonLoader.Utils;
+﻿using Il2CppSLZ.Marrow.Warehouse;
+using MelonLoader.Utils;
 using NEP.ScoreLab.Core;
 using UnityEngine;
 using Newtonsoft.Json;
@@ -11,16 +12,19 @@ namespace NEP.ScoreLab.Data
         public static Dictionary<string, ValuePackage> Packages { get; private set; }
         public static ValuePackage ActivePackage { get; private set; }
         public static Dictionary<string, int> HighScoreTable;
+        public static Dictionary<string, JSONPar> ParTable;
         
         public static readonly string Path_Developer      = Path.Combine(MelonEnvironment.UserDataDirectory, "Not Enough Photons");
         public static readonly string Path_Mod            = Path.Combine(Path_Developer, "ScoreLab");
         private static readonly string File_HighScores    = Path.Combine(Path_Mod, "highscores.json");
+        private static readonly string File_LevelPars     = Path.Combine(Path_Mod, "pars.json");
 
         public static void Initialize()
         {
             Packages = new Dictionary<string, ValuePackage>();
             
             HighScoreTable = ReadHighScores();
+            ParTable = ReadLevelPars();
             
             foreach (var manifest in HUDLoader.LoadedHUDManifests)
             {
@@ -103,6 +107,69 @@ namespace NEP.ScoreLab.Data
             }
 
             return highScores;
+        }
+        
+        public static Dictionary<string, JSONPar> ReadLevelPars()
+        {
+            Dictionary<string, JSONPar> pars = new Dictionary<string, JSONPar>();
+            string directory = File_LevelPars;
+
+            using (StreamReader sr = new StreamReader(directory))
+            {
+                using (JsonTextReader jsonReader = new JsonTextReader(sr))
+                {
+                    JObject obj = JToken.ReadFrom(jsonReader) as JObject;
+
+                    if (obj == null)
+                    {
+                        return null;
+                    }
+                    
+                    IList<string> keys = obj.Properties().Select(x => x.Name).ToList();
+
+                    foreach (var key in keys)
+                    {
+                        JObject target = obj[key] as JObject;
+
+                        JSONPar par = new JSONPar();
+                        
+                        JArray grades = target["grades"] as JArray;
+
+                        if (grades != null)
+                        {
+                            List<JSONPar.JSONGrade> gradeList = new List<JSONPar.JSONGrade>();
+                            
+                            foreach (var gradeObject in grades)
+                            {
+                                JSONPar.JSONGrade grade = new JSONPar.JSONGrade();
+                                grade.grade = gradeObject["grade"].Value<string>();
+                                grade.threshold = gradeObject["threshold"].Value<int>();
+                                gradeList.Add(grade);
+                            }
+
+                            // Sort the grade list by least to most
+                            // ...in case if map makers forget to do that
+                            gradeList.Sort((first, second) =>
+                            {
+                                if (first.threshold == second.threshold)
+                                    return 0;
+                                if (first.threshold >= second.threshold)
+                                    return 1;
+                                if (first.threshold <= second.threshold)
+                                    return -1;
+
+                                return 0;
+                            });
+                            
+                            par.grades = gradeList.ToArray();
+                        }
+                        
+                        pars.Add(key, par);
+                    }
+                }
+            }
+
+            return pars;
         }
 
         public static void WriteHighScores()
