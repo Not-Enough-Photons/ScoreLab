@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using BoneLib.BoneMenu;
+
 using NEP.ScoreLab.Core;
 using NEP.ScoreLab.Data;
 using NEP.ScoreLab.HUD;
@@ -14,6 +15,7 @@ namespace NEP.ScoreLab.Menu
         {
             Page root = Page.Root.CreatePage("Not Enough Photons", Color.white);
             Page modPage = root.CreatePage("ScoreLab", Color.white);
+            Page scorePage = modPage.CreatePage("Scores", Color.white);
             _hudPage = modPage.CreatePage("HUDs", Color.white);
 
             #if DEBUG
@@ -32,6 +34,24 @@ namespace NEP.ScoreLab.Menu
                 var function = _hudPage.CreateFunction(manifest.Name, Color.white, () => HUDManager.LoadHUD(manifest.Name));
                 function.Logo = manifest.Logo;
             }
+
+            scorePage.CreateFunction("Clear High Score", Color.red, () =>
+            {
+                BoneLib.BoneMenu.Menu.DisplayDialog(
+                    "Clear High Score", 
+                    "Clear the high score for this level? This action cannot be undone.",
+                    null,
+                    () => { ScoreTracker.ResetHighScore(); });
+            });
+            
+            scorePage.CreateFunction("Clear All High Scores", Color.red, () =>
+            {
+                BoneLib.BoneMenu.Menu.DisplayDialog(
+                    "Clear High Score", 
+                    "Clear all high scores? This action cannot be undone.",
+                    null,
+                    () => { ScoreTracker.ResetAll(); });
+            });
         }
 
         public static void RefreshHUDPage()
