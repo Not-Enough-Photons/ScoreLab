@@ -151,20 +151,7 @@ namespace NEP.ScoreLab.Core
                 ValueManager.HighScoreTable[_title] = _highScore;
                 Add(new PackedHighScore(_title, _highScore));
 
-                if (_levelPar.grades == null)
-                {
-                    return;
-                }
-                
-                for (int i = 0; i < _levelPar.grades.Length; i++)
-                {
-                    JSONPar.JSONGrade grade = _levelPar.grades[i];
-                
-                    if (_highScore >= grade.threshold)
-                    {
-                        _grade = grade;
-                    }
-                }
+                UpdateGrade();
             }
         }
 
@@ -231,11 +218,8 @@ namespace NEP.ScoreLab.Core
             if (table.ContainsKey(sceneInfo.Barcode))
             {
                 _levelPar = table[sceneInfo.Barcode];
+                UpdateGrade();
             }
-
-            _grade = new JSONPar.JSONGrade();
-            _grade.grade = "F";
-            _grade.threshold = 0;
         }
         
         public static void ResetHighScore()
@@ -264,6 +248,32 @@ namespace NEP.ScoreLab.Core
             }
 
             return false;
+        }
+
+        private static void UpdateGrade()
+        {
+            if (_levelPar == null || _levelPar.grades == null)
+            {
+                return;
+            }
+
+            if (_highScore <= _levelPar.grades[0].threshold)
+            {
+                _grade = new JSONPar.JSONGrade();
+                _grade.grade = "F";
+                _grade.threshold = 0;
+                return;
+            }
+            
+            for (int i = 0; i < _levelPar.grades.Length; i++)
+            {
+                JSONPar.JSONGrade grade = _levelPar.grades[i];
+                
+                if (_highScore >= grade.threshold)
+                {
+                    _grade = grade;
+                }
+            }
         }
 
         private static void SetPackedScore(PackedScore score)

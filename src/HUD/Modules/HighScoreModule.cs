@@ -17,7 +17,8 @@ namespace NEP.ScoreLab.HUD
         private float _currentValue;
         private float _rate = 4f;
 
-        private HUDText _testGradeLetterText;
+        private GameObject _gradeObject;
+        private HUDText _gradeLetter;
         private string[] _letters =
         {
             "A",
@@ -32,8 +33,9 @@ namespace NEP.ScoreLab.HUD
             {
                 ModuleType = UIModuleType.Descriptor;
             }
-            
-            _testGradeLetterText = transform.Find("Grade/Value").GetComponent<HUDText>();
+
+            _gradeObject = transform.Find("Grade").gameObject;
+            _gradeLetter = _gradeObject.transform.Find("Value").GetComponent<HUDText>();
         }
 
         public override void OnModuleEnable()
@@ -45,13 +47,15 @@ namespace NEP.ScoreLab.HUD
                 SetText(_title, ScoreTracker.Title);
                 SetText(_value, ScoreTracker.HighScore);
             }
+
+            UpdateGrade();
         }
 
         public override void OnUpdate()
         {
             UpdateDecay();
 
-            SetText(_testGradeLetterText, ScoreTracker.Grade.grade);
+            UpdateGrade();
             
             if (ModuleType == UIModuleType.Main)
             { 
@@ -65,6 +69,18 @@ namespace NEP.ScoreLab.HUD
                 SetText(_title, ScoreTracker.Title);
                 SetText(_value, _currentValue.ToString("N0"));
             }
+        }
+
+        private void UpdateGrade()
+        {
+            if (ScoreTracker.Grade == null)
+            {
+                _gradeObject.SetActive(false);
+                return;
+            }
+            
+            _gradeObject.SetActive(true);
+            SetText(_gradeLetter, ScoreTracker.Grade.grade);
         }
 
         private void SetTweenValue(int value)
