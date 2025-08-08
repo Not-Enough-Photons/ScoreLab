@@ -82,6 +82,7 @@ namespace NEP.ScoreLab.Core
                 }
             }
 
+            #if DEBUG
             [HarmonyLib.HarmonyPatch(typeof(BehaviourBaseNav), nameof(BehaviourBaseNav.OnUpdate))]
             public static class TestPatch
             {
@@ -95,6 +96,7 @@ namespace NEP.ScoreLab.Core
                     NEDraw.DrawText(output, 0.5f, topPos);
                 }
             }
+            #endif
             
             [HarmonyLib.HarmonyPatch(typeof(SubBehaviourHealth), nameof(SubBehaviourHealth.TakeDamage))]
             public static class NPCDamagePatch
