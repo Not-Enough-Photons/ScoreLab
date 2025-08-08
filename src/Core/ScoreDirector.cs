@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 
 using BoneLib;
-
+using Il2CppPuppetMasta;
 using Il2CppSLZ.Bonelab;
 using Il2CppSLZ.Marrow;
 using Il2CppSLZ.Marrow.Combat;

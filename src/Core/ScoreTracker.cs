@@ -227,13 +227,16 @@ namespace NEP.ScoreLab.Core
         public static void FetchLevelPar(MarrowSceneInfo sceneInfo)
         {
             var table = ValueManager.ParTable;
-
-            Main.Logger.Msg(sceneInfo.LevelTitle);
             
             if (table.ContainsKey(sceneInfo.Barcode))
             {
                 _levelPar = table[sceneInfo.Barcode];
                 UpdateGrade();
+            }
+            else
+            {
+                // If no level par was found, just set it to null
+                _levelPar = null;
             }
         }
         
