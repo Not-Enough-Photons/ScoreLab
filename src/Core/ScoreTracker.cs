@@ -181,6 +181,19 @@ namespace NEP.ScoreLab.Core
         {
             _multiplier = 1f;
         }
+        
+        public static void ResetHighScore()
+        {
+            _highScore = 0;
+            ResetScore();
+            UpdateGrade();
+        }
+
+        public static void ResetAllHighScores()
+        {
+            ValueManager.HighScoreTable.Clear();
+            ResetHighScore();
+        }
 
         #if DEBUG
         [NEConsoleCommand("scorelab.reset_all")]
@@ -215,6 +228,8 @@ namespace NEP.ScoreLab.Core
         {
             var table = ValueManager.ParTable;
 
+            Main.Logger.Msg(sceneInfo.LevelTitle);
+            
             if (table.ContainsKey(sceneInfo.Barcode))
             {
                 _levelPar = table[sceneInfo.Barcode];
@@ -222,11 +237,6 @@ namespace NEP.ScoreLab.Core
             }
         }
         
-        public static void ResetHighScore()
-        {
-
-        }
-
         public static void RemoveMultiplier(float multiplier)
         {
             if (_multiplier < _baseMultiplier)

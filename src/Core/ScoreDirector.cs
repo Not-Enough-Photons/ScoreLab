@@ -7,8 +7,9 @@ using Il2CppSLZ.Marrow;
 using Il2CppSLZ.Marrow.Combat;
 using Il2CppSLZ.Marrow.PuppetMasta;
 using Il2CppSLZ.Marrow.AI;
+using Il2CppSLZ.Marrow.Data;
 using Il2CppSLZ.Marrow.Interaction;
-
+using NEP.NEDebug;
 using NEP.ScoreLab.Data;
 
 using Avatar = Il2CppSLZ.VRMK.Avatar;
@@ -81,29 +82,129 @@ namespace NEP.ScoreLab.Core
                 }
             }
 
+            [HarmonyLib.HarmonyPatch(typeof(BehaviourBaseNav), nameof(BehaviourBaseNav.OnUpdate))]
+            public static class TestPatch
+            {
+                public static void Postfix(BehaviourBaseNav __instance)
+                {
+                    Transform head = __instance.sensors.selfTrp.chestTran.transform;
+                    Vector3 topPos = head.position + new Vector3(0f, 0.75f, 0f);
+
+                    string output = $"Health: {__instance.health.cur_hp * __instance.health.maxHitPoints}\n";
+
+                    NEDraw.DrawText(output, 0.5f, topPos);
+                }
+            }
+            
             [HarmonyLib.HarmonyPatch(typeof(SubBehaviourHealth), nameof(SubBehaviourHealth.TakeDamage))]
             public static class NPCDamagePatch
             {
-                public static void Postfix(SubBehaviourHealth __instance, int m, Attack attack)
+                public static bool Prefix(SubBehaviourHealth __instance, int m, Attack attack)
                 {
                     if (attack.proxy == null || attack.proxy.root == null)
                     {
-                        return;
+                        return true;
                     }
                     
                     if (attack.proxy.root.name != LocalPlayer)
                     {
-                        return;
+                        return true;
                     }
 
-                    float healthAfterStun = 0.0f;
-                    float stun = __instance.GetStun(m, out healthAfterStun);
+                    if (!__instance.behaviour.puppetMaster.isAlive)
+                    {
+                        return true;
+                    }
                     
-                    Main.Logger.Msg($"Hit muscle: {__instance.muscles[m]}");
-                    Main.Logger.Msg($"Current health: {__instance.cur_hp}");
-                    Main.Logger.Msg($"Health after stun: {healthAfterStun}");
-                    Main.Logger.Msg($"Stun: {stun}");
-                    Main.Logger.Msg($"Attack damage: {attack.damage}");
+                    float health = __instance.cur_hp * __instance.maxHitPoints;
+                    float damage = GetAdjustedDamage(attack, ref __instance);
+                    
+                    Main.Logger.Msg($"Damage (pre adjust): {attack.damage}");
+                    Main.Logger.Msg($"Damage (post adjust): {damage}");
+
+                    string attackTypeStr = string.Empty;
+
+                    if (attack.attackType.HasFlag(AttackType.Blunt))
+                    {
+                        attackTypeStr += "Blunt ";
+                    }
+
+                    if (attack.attackType.HasFlag(AttackType.Stabbing))
+                    {
+                        attackTypeStr += "Stabbing ";
+                    }
+
+                    if (attack.attackType.HasFlag(AttackType.Slicing))
+                    {
+                        attackTypeStr += "Slicing ";
+                    }
+
+                    if (attack.attackType.HasFlag(AttackType.Piercing))
+                    {
+                        attackTypeStr += "Piercing ";
+                    }
+                    
+                    Main.Logger.Msg($"Attack type: {attackTypeStr}");
+                    
+                    SubBehaviourHealth.StunGroup group = __instance.muscles[m];
+
+                    const float headMultiplier = 4 * 1.025f;
+                    const float limbReduction = 0.1f;
+                    
+                    if (group == SubBehaviourHealth.StunGroup.Head)
+                    {
+                        if (attack.attackType.HasFlag(AttackType.Blunt))
+                        {
+                            damage *= (headMultiplier * 2) * limbReduction;
+                        }
+                        else
+                        {
+                            damage *= headMultiplier;
+                        }
+                        
+                        Main.Logger.Msg($"Actual blunt damage: {damage}");
+                        
+                        if (damage >= health)
+                        {
+                            ScoreTracker.Add(EventType.Score.Headshot);
+                        }
+                    }
+
+                    if (group > SubBehaviourHealth.StunGroup.Spine && group < SubBehaviourHealth.StunGroup.Head)
+                    {
+                        damage *= limbReduction;
+                    }
+                    
+                    if (damage >= health)
+                    {
+                        ScoreTracker.Add(EventType.Score.Kill);
+                        ScoreTracker.Add(ValueManager.Get(EventType.Mult.Kill));
+                    }
+                    
+                    return true;
+                }
+
+                private static float GetAdjustedDamage(Attack attack, ref SubBehaviourHealth health)
+                {
+                    AttackType type = attack.attackType;
+                    float damage = attack.damage;
+                    
+                    if (type.HasFlag(AttackType.Piercing))
+                    {
+                        damage *= health.pierceMult;
+                    }
+
+                    if (type.HasFlag(AttackType.Stabbing) || type.HasFlag(AttackType.Slicing))
+                    {
+                        damage *= health.stabMult;
+                    }
+
+                    if (type.HasFlag(AttackType.Blunt))
+                    {
+                        damage *= health.bluntMult;
+                    }
+
+                    return damage;
                 }
             }
             
@@ -144,8 +245,6 @@ namespace NEP.ScoreLab.Core
             {
                 public static void Postfix(RigManager rM)
                 {
-                    Main.Logger.Msg($"Seat::Register: {rM.name}");
-                    
                     if (rM.name != LocalPlayer)
                     {
                         return;
@@ -162,8 +261,6 @@ namespace NEP.ScoreLab.Core
             {
                 public static void Prefix(Seat __instance)
                 {
-                    Main.Logger.Msg($"Seat::DeRegister: {__instance._rig.name}");
-                    
                     if (__instance._rig.name == LocalPlayer)
                     {
                         IsPlayerSeated = false;
@@ -177,8 +274,6 @@ namespace NEP.ScoreLab.Core
             {
                 public static void Postfix(Player_Health __instance)
                 {
-                    Main.Logger.Msg($"LifeSavingDamageDealt: {__instance._rigManager.name}");
-                    
                     if (__instance._rigManager.name != LocalPlayer)
                     {
                         return;
@@ -325,8 +420,8 @@ namespace NEP.ScoreLab.Core
 
             public static void OnAIDeath(BehaviourBaseNav behaviour)
             {
-                ScoreTracker.Add(ValueManager.Get(EventType.Score.Kill));
-                ScoreTracker.Add(ValueManager.Get(EventType.Mult.Kill));
+                // ScoreTracker.Add(ValueManager.Get(EventType.Score.Kill));
+                // ScoreTracker.Add(ValueManager.Get(EventType.Mult.Kill));
                 
                 if(!behaviour.sensors.isGrounded)
                 {

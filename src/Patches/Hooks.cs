@@ -1,4 +1,5 @@
 ﻿using BoneLib;
+using Il2CppSLZ.Marrow.PuppetMasta;
 using NEP.ScoreLab.Data;
 
 using Il2CppSLZ.Marrow.Utilities;

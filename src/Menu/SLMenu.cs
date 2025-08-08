@@ -50,7 +50,7 @@ namespace NEP.ScoreLab.Menu
                     "Clear High Score", 
                     "Clear all high scores? This action cannot be undone.",
                     null,
-                    () => { ScoreTracker.ResetAll(); });
+                    () => { ScoreTracker.ResetAllHighScores(); });
             });
         }
 
