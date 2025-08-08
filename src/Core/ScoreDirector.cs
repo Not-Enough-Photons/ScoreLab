@@ -367,17 +367,17 @@ namespace NEP.ScoreLab.Core
 
             public static void OnAIDeath(BehaviourBaseNav behaviour)
             {
-                // ScoreTracker.Add(ValueManager.Get(EventType.Score.Kill));
-                // ScoreTracker.Add(ValueManager.Get(EventType.Mult.Kill));
+                ScoreTracker.Add(ValueManager.Get(EventType.Score.Kill));
+                ScoreTracker.Add(ValueManager.Get(EventType.Mult.Kill));
                 
                 if(!behaviour.sensors.isGrounded)
                 {
-                    // ScoreTracker.Add(EventType.Score.EnemyMidAirKill);
+                    ScoreTracker.Add(EventType.Score.EnemyMidAirKill);
                 }
 
                 if (behaviour.sensors.target == null)
                 {
-                    // ScoreTracker.Add(EventType.Score.StealthKill);
+                    ScoreTracker.Add(EventType.Score.StealthKill);
                 }
             }
         }
