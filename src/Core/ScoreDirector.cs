@@ -106,7 +106,7 @@ namespace NEP.ScoreLab.Core
                         return true;
                     }
                     
-                    if (attack.proxy.root.name != LocalPlayer)
+                    if (attack.proxy.triggerType != TriggerRefProxy.TriggerType.Player || attack.proxy.root.name != LocalPlayer)
                     {
                         return true;
                     }
@@ -118,67 +118,24 @@ namespace NEP.ScoreLab.Core
                     
                     float health = __instance.cur_hp * __instance.maxHitPoints;
                     float damage = GetAdjustedDamage(attack, ref __instance);
-                    
-                    Main.Logger.Msg($"Damage (pre adjust): {attack.damage}");
-                    Main.Logger.Msg($"Damage (post adjust): {damage}");
 
-                    string attackTypeStr = string.Empty;
-
-                    if (attack.attackType.HasFlag(AttackType.Blunt))
-                    {
-                        attackTypeStr += "Blunt ";
-                    }
-
-                    if (attack.attackType.HasFlag(AttackType.Stabbing))
-                    {
-                        attackTypeStr += "Stabbing ";
-                    }
-
-                    if (attack.attackType.HasFlag(AttackType.Slicing))
-                    {
-                        attackTypeStr += "Slicing ";
-                    }
-
-                    if (attack.attackType.HasFlag(AttackType.Piercing))
-                    {
-                        attackTypeStr += "Piercing ";
-                    }
-                    
-                    Main.Logger.Msg($"Attack type: {attackTypeStr}");
-                    
                     SubBehaviourHealth.StunGroup group = __instance.muscles[m];
 
+                    if (!attack.attackType.HasFlag(AttackType.Piercing))
+                    {
+                        return true;
+                    }
+                    
                     const float headMultiplier = 4 * 1.025f;
-                    const float limbReduction = 0.1f;
                     
                     if (group == SubBehaviourHealth.StunGroup.Head)
                     {
-                        if (attack.attackType.HasFlag(AttackType.Blunt))
-                        {
-                            damage *= (headMultiplier * 2) * limbReduction;
-                        }
-                        else
-                        {
-                            damage *= headMultiplier;
-                        }
-                        
-                        Main.Logger.Msg($"Actual blunt damage: {damage}");
+                        damage *= headMultiplier;
                         
                         if (damage >= health)
                         {
                             ScoreTracker.Add(EventType.Score.Headshot);
                         }
-                    }
-
-                    if (group > SubBehaviourHealth.StunGroup.Spine && group < SubBehaviourHealth.StunGroup.Head)
-                    {
-                        damage *= limbReduction;
-                    }
-                    
-                    if (damage >= health)
-                    {
-                        ScoreTracker.Add(EventType.Score.Kill);
-                        ScoreTracker.Add(ValueManager.Get(EventType.Mult.Kill));
                     }
                     
                     return true;
@@ -192,16 +149,6 @@ namespace NEP.ScoreLab.Core
                     if (type.HasFlag(AttackType.Piercing))
                     {
                         damage *= health.pierceMult;
-                    }
-
-                    if (type.HasFlag(AttackType.Stabbing) || type.HasFlag(AttackType.Slicing))
-                    {
-                        damage *= health.stabMult;
-                    }
-
-                    if (type.HasFlag(AttackType.Blunt))
-                    {
-                        damage *= health.bluntMult;
                     }
 
                     return damage;
