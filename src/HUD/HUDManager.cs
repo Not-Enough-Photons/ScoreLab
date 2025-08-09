@@ -1,4 +1,6 @@
+#if DEBUG
 using NEP.NEDebug.Console;
+#endif
 using NEP.ScoreLab.Core;
 using UnityEngine;
 

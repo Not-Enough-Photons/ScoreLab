@@ -1,15 +1,15 @@
 ﻿using UnityEngine;
 
 using BoneLib;
-using Il2CppPuppetMasta;
 using Il2CppSLZ.Bonelab;
 using Il2CppSLZ.Marrow;
 using Il2CppSLZ.Marrow.Combat;
 using Il2CppSLZ.Marrow.PuppetMasta;
 using Il2CppSLZ.Marrow.AI;
 using Il2CppSLZ.Marrow.Data;
-using Il2CppSLZ.Marrow.Interaction;
+#if DEBUG
 using NEP.NEDebug;
+#endif
 using NEP.ScoreLab.Data;
 
 using Avatar = Il2CppSLZ.VRMK.Avatar;
@@ -23,65 +23,6 @@ namespace NEP.ScoreLab.Core
         
         public static class Patches
         {
-            [HarmonyLib.HarmonyPatch(typeof(Projectile), nameof(Projectile.Awake))]
-            public static class ProjectilePatch
-            {
-                public static void Postfix(Projectile __instance)
-                {
-                    Action<Collider, Vector3, Vector3> action = ((col, world, normal) =>
-                    {
-                        OnProjectileCollision(__instance, col, world, normal);
-                    });
-                    
-                    __instance.onCollision.AddListener(action);
-                }
-
-                private static void OnProjectileCollision(Projectile __instance, Collider collider, Vector3 world, Vector3 normal)
-                {
-                    MarrowBody head = MarrowBody.Cache.Get(collider.gameObject);
-
-                    if (head == null)
-                    {
-                        return;
-                    }
-                    
-                    TriggerRefProxy proxy = head.GetComponent<TriggerRefProxy>();
-
-                    if (proxy == null)
-                    {
-                        return;
-                    }
-
-                    if (proxy.aiManager.isDead)
-                    {
-                        return;
-                    }
-
-                    TriggerRefProxy playerProxy = __instance._proxy;
-
-                    if (playerProxy.triggerType != TriggerRefProxy.TriggerType.Player)
-                    {
-                        return;
-                    }
-
-                    if (playerProxy.root.name != LocalPlayer)
-                    {
-                        Main.Logger.Msg("Projectile came from non-local player!");
-                        return;
-                    }
-
-                    if (__instance._proxy.root.name != LocalPlayer)
-                    {
-                        return;
-                    }
-                    
-                    if (proxy.targetHead.gameObject == head.gameObject)
-                    {
-                        // ScoreTracker.Add(EventType.Score.Headshot);
-                    }
-                }
-            }
-
             #if DEBUG
             [HarmonyLib.HarmonyPatch(typeof(BehaviourBaseNav), nameof(BehaviourBaseNav.OnUpdate))]
             public static class TestPatch
