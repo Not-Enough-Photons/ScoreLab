@@ -19,13 +19,6 @@ namespace NEP.ScoreLab.HUD
 
         private GameObject _gradeObject;
         private HUDText _gradeLetter;
-        private string[] _letters =
-        {
-            "A",
-            "B",
-            "C",
-            "D"
-        };
         
         private void Awake()
         {

@@ -226,6 +226,10 @@ namespace NEP.ScoreLab.Core
 
         public static void FetchLevelPar(MarrowSceneInfo sceneInfo)
         {
+            // Clear any existing data
+            _levelPar = null;
+            _grade = null;
+            
             var table = ValueManager.ParTable;
             
             if (table.ContainsKey(sceneInfo.Barcode))
@@ -233,11 +237,11 @@ namespace NEP.ScoreLab.Core
                 _levelPar = table[sceneInfo.Barcode];
                 UpdateGrade();
             }
-            else
-            {
-                // If no level par was found, just set it to null
-                _levelPar = null;
-            }
+        }
+
+        public static void SetLevelPar(JSONPar par)
+        {
+            _levelPar = par;
         }
         
         public static void RemoveMultiplier(float multiplier)
@@ -263,14 +267,14 @@ namespace NEP.ScoreLab.Core
             return false;
         }
 
-        private static void UpdateGrade()
+        public static void UpdateGrade()
         {
             if (_levelPar == null || _levelPar.grades == null)
             {
                 return;
             }
 
-            if (_highScore <= _levelPar.grades[0].threshold)
+            if (_score <= _levelPar.grades[0].threshold)
             {
                 _grade = new JSONPar.JSONGrade();
                 _grade.grade = "F";
@@ -282,7 +286,7 @@ namespace NEP.ScoreLab.Core
             {
                 JSONPar.JSONGrade grade = _levelPar.grades[i];
                 
-                if (_highScore >= grade.threshold)
+                if (_score >= grade.threshold)
                 {
                     _grade = grade;
                 }

@@ -25,12 +25,15 @@
 	  <Compile Include="src\Core\ScoreTracker.cs" />
 	  <Compile Include="src\Core\Settings.cs" />
 	  <Compile Include="src\Data\HUDLoader.cs" />
+	  <Compile Include="src\Data\JSON\GradeDefinition.cs" />
 	  <Compile Include="src\Data\JSON\JSONAudioParams.cs" />
 	  <Compile Include="src\Data\JSON\JSONHighScore.cs" />
 	  <Compile Include="src\Data\JSON\JSONHudManifest.cs" />
 	  <Compile Include="src\Data\JSON\JSONLevelScore.cs" />
 	  <Compile Include="src\Data\JSON\JSONMult.cs" />
 	  <Compile Include="src\Data\JSON\JSONScore.cs" />
+	  <Compile Include="src\Data\JSON\ParData.cs" />
+	  <Compile Include="src\Data\JSON\ParDefinitionHolder.cs" />
 	  <Compile Include="src\Data\MarrowSceneInfo.cs" />
 	  <Compile Include="src\Data\Packages\EventType.cs" />
 	  <Compile Include="src\Data\Packages\PackedAudioParams.cs" />
